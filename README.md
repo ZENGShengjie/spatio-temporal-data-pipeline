@@ -1,82 +1,64 @@
-# Spatio-Temporal Urban Computing Project
+# Spatio-Temporal Urban Computing Pipeline
 
-> 基于多源时空数据融合的城市计算异常检测与预测系统 —— 第一周：数据采集
+> **多源时空数据融合 · 城市计算异常检测与预测系统**
+>
+> 配套论文：`多源时空数据集说明文档.pdf`（见 `week1/docs/原始资料/`）
 
-## 📋 项目背景
+---
 
-本项目融合 **多源时空数据**（卫星影像、气象、POI、出租车轨迹等），构建城市计算异常检测与预测系统。本仓库对应 **Week 1：多源数据下载** 部分。
-
-> 配套论文参见根目录 `机器学习算法在城市计算异常检测与预测系统(1).pdf`
-
-## 📂 目录结构
+## 🗂 仓库结构（按周组织）
 
 ```
-week 1/
-├── nasa_download.py                    # NASA Earthdata Landsat 影像检索与下载
-├── download_landsat.py                 # Landsat 专用下载脚本
-├── download_final.py                   # 最终整合脚本（HLSL30 / earthaccess）
-├── download_weather.py                 # OpenWeather 气象预报数据下载
-├── download_geonames.py                # GeoNames POI 兴趣点下载
+spatio-temporal-data-pipeline/
+├── README.md                  ← 你正在看
+├── .gitignore
+├── .env.example
 │
-├── AWS EC2城市交通时间预测项目搭建操作指南.docx          # 部署指南
-├── 多源时空数据集说明文档.docx                          # 数据集说明
-├── 城市信息时空行业研究前沿关键技术报告.docx            # 行业前沿报告
+├── week1/   ── Week 1：多源数据采集（已完成）
+│   ├── README.md
+│   ├── scripts/   (7 个下载脚本)
+│   └── docs/
+│       └── 原始资料/  (3 份 .docx，归档本地，git 忽略)
 │
-├── .env.example                        # 环境变量模板
-└── README.md
+└── week2/   ── Week 2：数据清洗 + 网格 + 特征工程 + 异构图（已完成）
+    ├── README.md            (操作手册 + 性能数据)
+    ├── DELIVERY.md          (Leader 优先看：交付物索引)
+    ├── deploy.py            (一键部署)
+    ├── scripts/             (21 个 .py + EARTHDATA_RUNBOOK.md)
+    └── docs/                (4 份设计文档：质量 / 架构 / 接口 / 测试)
 ```
 
-## 🛰️ 数据源
+> **Week 3+** 待添加：直接新建 `week3/` 子目录即可。
 
-| 数据源 | 用途 | 脚本 |
-|---|---|---|
-| NASA Earthdata / HLSL30 | Landsat 卫星影像 | `nasa_download.py`、`download_final.py` |
-| OpenWeather | 气象预报数据 | `download_weather.py` |
-| GeoNames / OSM | POI 兴趣点 | `download_geonames.py` |
+---
 
-## 🚀 快速开始
+## 🚦 Leader 验收入口
 
-### 1. 安装依赖
+| 优先级 | 路径 | 看点 |
+|--------|------|------|
+| ⭐⭐⭐ | [`week2/DELIVERY.md`](week2/DELIVERY.md) | Week 2 当天交付物的清单 + 验收状态 |
+| ⭐⭐⭐ | [`week2/docs/数据质量分析报告.md`](week2/docs/数据质量分析报告.md) | 数据质量分析报告（原始交付要求 4） |
+| ⭐⭐ | [`week2/README.md`](week2/README.md) | Week 2 完整流程与性能数据 |
+| ⭐⭐ | [`week2/docs/代码架构设计报告.md`](week2/docs/代码架构设计报告.md) | 代码架构设计报告（追加交付 5） |
+| ⭐⭐ | [`week2/docs/接口定义文档.md`](week2/docs/接口定义文档.md) | 接口定义文档（追加交付 6） |
+| ⭐ | [`week2/docs/测试文档.md`](week2/docs/测试文档.md) | 测试文档（追加交付 7） |
+| ⭐ | [`week1/README.md`](week1/README.md) | Week 1 数据采集说明 |
 
-```bash
-pip install requests pandas earthaccess geopandas
-```
-
-### 2. 配置环境变量
-
-复制 `.env.example` 为 `.env`，填入真实凭证：
-
-```bash
-cp .env.example .env
-```
-
-或者直接在脚本里修改硬编码值（不推荐，勿提交到 Git）。
-
-### 3. 运行下载
-
-```bash
-python download_final.py        # 下载卫星影像（推荐）
-python download_weather.py     # 下载天气数据
-python download_geonames.py    # 下载 POI 数据
-```
+---
 
 ## 📅 项目进度
 
-- ✅ **Week 1**: 多源数据下载与准备（当前）
-- ⏳ **Week 2**: 多源数据清洗与标准化、500m 网格划分、时空特征工程
-- ⏳ **Week 3**: 多模态图结构构建（异构图）
+- ✅ **Week 1**：多源数据下载与准备（NASA Landsat、OpenWeather、GeoNames、NYC Taxi、OSM）
+- ✅ **Week 2**：数据清洗（41M→19.85M Taxi）→ 500m 网格（15,875）→ 36 维时空特征（2,667,000 行）→ 异构图（230,732 边）
+- ⏳ **Week 3+**：模型训练与异常检测
+
+---
 
 ## 🛠️ 运行环境
 
 - Python 3.10+
-- 推荐 Linux / WSL
-- 远程部署：AWS EC2 (Ubuntu)
-
-## ⚠️ 注意事项
-
-1. **不要**把 `.env` 或含有真实凭证的脚本提交到 GitHub
-2. 数据文件（`.tif` / `.zip`）已加入 `.gitignore`，避免仓库膨胀
-3. 详细部署步骤请参阅 `AWS EC2城市交通时间预测项目搭建操作指南.docx`
+- 推荐 Linux / WSL / EC2 Ubuntu 22.04
+- 大文件（`.tif`、`.parquet`、`.zip`、`.docx`、凭证 `.env`）已加入 `.gitignore`
 
 ## 📄 License
 

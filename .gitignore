@@ -33,3 +33,29 @@ scene_list.txt
 *.swp
 .DS_Store
 Thumbs.db
+
+# ============ 文档二进制 ============
+*.docx
+*.pdf
+
+# ============ week2 输出 (大体积) ============
+raw_nyc/
+cleaned_nyc/
+grid_nyc/
+features_nyc/
+graph_nyc/
+processed/
+osm_extracts/
+tmp_ndvi/
+logs/
+*.zip
+*.tif
+*.tiff
+*.parquet
+*.feather
+*.pt
+*.pkl
+*.ckpt
+*.hdf
+*.h5
+__pycache__/

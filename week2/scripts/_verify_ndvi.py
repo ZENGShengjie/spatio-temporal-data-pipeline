@@ -1,0 +1,10 @@
+import pandas as pd
+df = pd.read_parquet("/home/ubuntu/amazon/cleaned_nyc/ndvi_clean.parquet")
+print("shape:", df.shape)
+print("cols:", list(df.columns))
+print(df.head(10))
+print("\nndvi_mean stats:")
+print(df["ndvi_mean"].describe())
+print("\nNaN count:", df["ndvi_mean"].isna().sum())
+print("\nnon-NaN count:", df["ndvi_mean"].notna().sum())
+print("\nsample_months:", df["sample_months"].head(5).tolist())

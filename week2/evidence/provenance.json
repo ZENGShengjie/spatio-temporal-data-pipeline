@@ -1,0 +1,12 @@
+{
+  "raw_h5_path": "/home/ubuntu/data/raw_bj/taxi_bj_gitee/BJ16_M32x32_T30_InOut.h5",
+  "raw_total_slots": 7220,
+  "n_hours": 3888,
+  "complete_hours": 3603,
+  "partial_hours": 14,
+  "missing_hours": 271,
+  "complete_match_exact": 3603,
+  "partial_correct": 14,
+  "missing_dow_match": 271,
+  "verification_passed": true
+}

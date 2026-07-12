@@ -1,0 +1,61 @@
+# ============ 凭证和敏感信息 ============
+.env
+*.pem
+credentials.txt
+*.key
+
+# ============ 数据文件（体积大，不上传） ============
+raw_*/
+*_raw/
+*.tif
+*.tiff
+*.zip
+*.tar.gz
+*.7z
+
+# ============ Python 缓存 ============
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# ============ 输出文件 ============
+scene_list.txt
+*_raw.json
+*.parquet
+*.feather
+
+# ============ IDE ============
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ============ 文档二进制 ============
+*.docx
+*.pdf
+
+# ============ week2 输出 (大体积) ============
+raw_nyc/
+cleaned_nyc/
+grid_nyc/
+features_nyc/
+graph_nyc/
+processed/
+osm_extracts/
+tmp_ndvi/
+logs/
+*.zip
+*.tif
+*.tiff
+*.parquet
+*.feather
+*.pt
+*.pkl
+*.ckpt
+*.hdf
+*.h5
+__pycache__/

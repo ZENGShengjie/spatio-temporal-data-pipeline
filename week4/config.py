@@ -43,7 +43,8 @@ SPLIT = Split()
 @dataclass
 class TrainCfg:
     seq_len: int = 48; horizon: int = 48
-    batch:   int = 16; epochs: int = 50
+    batch:   int = 4                      # V4: STGCN/AGFormer memory tight → batch 4
+    epochs:  int = 50
     lr:      float = 1e-3; weight_decay: float = 1e-5
     patience: int = 7
     hidden:  int = 64; layers: int = 2; dropout: float = 0.1

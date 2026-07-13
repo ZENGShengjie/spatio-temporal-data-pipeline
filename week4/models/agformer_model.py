@@ -69,35 +69,35 @@ class TopKSpatialAttention(nn.Module):
         with torch.no_grad(): self.adaptive_adj.copy_(A_bias)
 
     def forward(self, x):
-        BT, N, C = x.shape; H = self.n_heads; d_k = self.d_k
-        Q = self.Wq(x).view(BT, N, H, d_k).transpose(1, 2)   # (BT, H, N, d_k)
-        K_ = self.Wk(x).view(BT, N, H, d_k).transpose(1, 2)
-        V = self.Wv(x).view(BT, N, H, d_k).transpose(1, 2)
+        """Top-K sparse attention over the spatial dim.
+        Memory-efficient: only compute K-slot attention per query.
+        Input x: (BT, N, d_model)
+        """
+        BT, N, C = x.shape
+        H = self.n_heads; d_k = self.d_k
+        Q = self.Wq(x).view(BT, N, H, d_k).permute(0, 2, 1, 3)  # (BT, H, N, d_k)
+        K_ = self.Wk(x).view(BT, N, H, d_k).permute(0, 2, 1, 3)
+        V = self.Wv(x).view(BT, N, H, d_k).permute(0, 2, 1, 3)
 
-        # Top-K neighbor sparse attention: only attend to K most related
-        adj = self.adaptive_adj                                    # (N, N)
-        topk_val, topk_idx = torch.topk(adj, self.K, dim=-1)       # (N, K)
-        # gather K and V at the K positions per query node
-        Kh = K_.permute(0, 2, 1, 3).reshape(BT * N, H, d_k)      # (BT*N, H, d_k)
-        Vh = V.permute(0, 2, 1, 3).reshape(BT * N, H, d_k)
-        # topk_idx: (N, K) → expand to (BT*N, K)
-        idx = topk_idx.unsqueeze(0).expand(BT * N, -1, -1)        # (BT*N, N, K)
-        # gather hidden for each of the K neighbors
-        # Kh has shape (BT*N, H, d_k); we need to gather over the "node" axis
-        # Actually K_/V is shared per (T) so simplify: just gather per query without H expansion
-        K_per_node = K_.permute(0, 2, 1, 3)                       # (BT, H, N, d_k)
-        V_per_node = V.permute(0, 2, 1, 3)
-        K_topk = K_per_node.gather(2,                              # (BT, H, N, K, d_k)
-            topk_idx.view(1, 1, N, self.K, 1).expand(BT, H, N, self.K, d_k))
-        V_topk = V_per_node.gather(2,
-            topk_idx.view(1, 1, N, self.K, 1).expand(BT, H, N, self.K, d_k))
-        Qh = Q.unsqueeze(3)                                        # (BT, H, N, 1, d_k)
-        scores = (Qh * K_topk).sum(-1) / (d_k ** 0.5)              # (BT, H, N, K)
-        attn = torch.softmax(scores, dim=-1)
+        # Top-K neighbor indices from adaptive adj
+        topk_idx = torch.topk(self.adaptive_adj, self.K, dim=-1).indices  # (N, K)
+        # Gather K_ and V at the K neighbor positions for each query
+        # index expanded: (1, 1, N, K) -> for gather on dim=-2 of (BT, H, N, d_k)
+        idx = topk_idx.view(1, 1, N, self.K).expand(BT, H, N, self.K)  # (BT, H, N, K)
+        # gather over dim=2 (node dim). Result: (BT, H, N, K, d_k)
+        K_topk = K_.unsqueeze(3).expand(BT, H, N, self.K, d_k).gather(
+            2, idx.unsqueeze(-1).expand(BT, H, N, self.K, d_k))
+        V_topk = V.unsqueeze(3).expand(BT, H, N, self.K, d_k).gather(
+            2, idx.unsqueeze(-1).expand(BT, H, N, self.K, d_k))
+
+        # Q at query (BT, H, N, 1, d_k), K_topk at neighbors (BT, H, N, K, d_k)
+        Qh = Q.unsqueeze(3)  # (BT, H, N, 1, d_k)
+        scores = (Qh * K_topk).sum(-1) / (d_k ** 0.5)   # (BT, H, N, K)
+        attn = torch.softmax(scores, dim=-1)              # (BT, H, N, K)
         attn = self.drop(attn)
-        # (BT, H, N, K) × (BT, H, N, K, d_k) → (BT, H, N, 1, d_k) → sum over K dim
-        out = (attn.unsqueeze(-1) * V_topk).sum(dim=3)             # (BT, H, N, d_k)
-        out = out.transpose(1, 2).contiguous().view(BT, N, -1)    # (BT, N, H*d_k)
+        # weighted sum
+        out = (attn.unsqueeze(-1) * V_topk).sum(dim=3)    # (BT, H, N, d_k)
+        out = out.permute(0, 2, 1, 3).contiguous().view(BT, N, -1)
         return self.proj(out)
 
 

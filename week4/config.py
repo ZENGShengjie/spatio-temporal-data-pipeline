@@ -44,9 +44,9 @@ SPLIT = Split()
 class TrainCfg:
     seq_len: int = 48; horizon: int = 48
     batch:   int = 4                      # V4: STGCN/AGFormer memory tight → batch 4
-    epochs:  int = 50
+    epochs:  int = 20                     # V4: tighter epoch budget for advanced models
     lr:      float = 1e-3; weight_decay: float = 1e-5
-    patience: int = 7
+    patience: int = 5
     hidden:  int = 64; layers: int = 2; dropout: float = 0.1
     seed:    int = DEFAULT_SEED
     device:  str = "cuda"

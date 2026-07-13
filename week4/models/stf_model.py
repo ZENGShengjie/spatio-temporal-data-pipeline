@@ -19,12 +19,19 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 import sys, os
-sys.path.insert(0, os.path.dirname(__file__) + "/..")
+_pkg_root = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _pkg_root)
+sys.path.insert(0, os.path.dirname(_pkg_root))
+sys.path.insert(0, os.path.dirname(os.path.dirname(_pkg_root)))
+
 import config as cfg
 from data_loader import SeqDataset
 from base_trainer import set_seed, make_device
 from metrics import BaseTrainer
-from stgcn_model import GCNBaseTrainer
+try:
+    from stgcn_model import GCNBaseTrainer
+except ImportError:
+    from models.stgcn_model import GCNBaseTrainer
 
 
 class SpacetimeformerLite(nn.Module):
@@ -66,10 +73,11 @@ class SpacetimeformerLite(nn.Module):
     def forward(self, x_node):
         B, N, F_in, T = x_node.shape
 
-        # Env: mean pool over nodes → transformer
-        x_env = x_node.mean(dim=1).permute(0,2,1)        # (B, T, F=2)
-        x_env = self.env_proj(x_env) + self.env_pos     # (B, T, d)
-        env_seq = self.env_transformer(x_env)            # (B, T, d)
+        # Env: per-timestep, aggregate all N nodes via sum/proj → env token (B, T, d)
+        x_env = x_node.permute(0, 3, 1, 2)              # (B, T, N, F)
+        x_env = x_env.sum(dim=-1)                        # (B, T, N)
+        x_env = self.env_proj(x_env) + self.env_pos    # (B, T, d)
+        env_seq = self.env_transformer(x_env)           # (B, T, d)
 
         # Loc: per-node proj
         x_loc = x_node.permute(0,1,3,2).reshape(B*N, T, F_in)

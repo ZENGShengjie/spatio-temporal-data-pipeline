@@ -152,9 +152,11 @@ class AGFormer(nn.Module):
             x_flat = x.reshape(B*T, x.shape[1], -1)
             h_flat = block(x_flat, B, T)
             x = h_flat.reshape(B, T, h_flat.shape[1], -1).permute(0,2,1,3)
-        x = x.reshape(x.shape[1] * B, T, -1)
+        # x is (B, N, T, d). Reshape to (B*N, T, d) for per-node GRU over T
+        N = x.shape[1]
+        x = x.reshape(B * N, T, -1)
         _, h_last = self.temporal(x)
-        last = h_last.squeeze(0).reshape(B, x.shape[1], -1)
+        last = h_last.squeeze(0).reshape(B, N, -1)
         return self.decoder(self.temporal_ln(last))
 
 

@@ -14,12 +14,19 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 import sys, os
-sys.path.insert(0, os.path.dirname(__file__) + "/..")
+_pkg_root = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _pkg_root)
+sys.path.insert(0, os.path.dirname(_pkg_root))
+sys.path.insert(0, os.path.dirname(os.path.dirname(_pkg_root)))
+
 import config as cfg
 from data_loader import SeqDataset
 from base_trainer import set_seed, make_device
 from metrics import BaseTrainer
-from stgcn_model import GCNBaseTrainer
+try:
+    from stgcn_model import GCNBaseTrainer
+except ImportError:
+    from models.stgcn_model import GCNBaseTrainer
 
 
 def build_static_adj_bias(graph, n_nodes=1024, alpha=0.1):
@@ -63,18 +70,34 @@ class TopKSpatialAttention(nn.Module):
 
     def forward(self, x):
         BT, N, C = x.shape; H = self.n_heads; d_k = self.d_k
-        Q = self.Wq(x).view(BT, N, H, d_k).transpose(1, 2)
+        Q = self.Wq(x).view(BT, N, H, d_k).transpose(1, 2)   # (BT, H, N, d_k)
         K_ = self.Wk(x).view(BT, N, H, d_k).transpose(1, 2)
         V = self.Wv(x).view(BT, N, H, d_k).transpose(1, 2)
-        topk_val, topk_idx = torch.topk(self.adaptive_adj, self.K, dim=-1)
-        mask = torch.zeros(N, N, device=x.device)
-        mask.scatter_(1, topk_idx, 1.0)
-        attn_mask = mask.unsqueeze(0).unsqueeze(0)
-        scores = torch.matmul(Q, K_.transpose(-2,-1)) / (d_k ** 0.5)
-        scores = scores.masked_fill(attn_mask < 0.5, float(-1e9))
+
+        # Top-K neighbor sparse attention: only attend to K most related
+        adj = self.adaptive_adj                                    # (N, N)
+        topk_val, topk_idx = torch.topk(adj, self.K, dim=-1)       # (N, K)
+        # gather K and V at the K positions per query node
+        Kh = K_.permute(0, 2, 1, 3).reshape(BT * N, H, d_k)      # (BT*N, H, d_k)
+        Vh = V.permute(0, 2, 1, 3).reshape(BT * N, H, d_k)
+        # topk_idx: (N, K) → expand to (BT*N, K)
+        idx = topk_idx.unsqueeze(0).expand(BT * N, -1, -1)        # (BT*N, N, K)
+        # gather hidden for each of the K neighbors
+        # Kh has shape (BT*N, H, d_k); we need to gather over the "node" axis
+        # Actually K_/V is shared per (T) so simplify: just gather per query without H expansion
+        K_per_node = K_.permute(0, 2, 1, 3)                       # (BT, H, N, d_k)
+        V_per_node = V.permute(0, 2, 1, 3)
+        K_topk = K_per_node.gather(2,                              # (BT, H, N, K, d_k)
+            topk_idx.view(1, 1, N, self.K, 1).expand(BT, H, N, self.K, d_k))
+        V_topk = V_per_node.gather(2,
+            topk_idx.view(1, 1, N, self.K, 1).expand(BT, H, N, self.K, d_k))
+        Qh = Q.unsqueeze(3)                                        # (BT, H, N, 1, d_k)
+        scores = (Qh * K_topk).sum(-1) / (d_k ** 0.5)              # (BT, H, N, K)
         attn = torch.softmax(scores, dim=-1)
         attn = self.drop(attn)
-        out = torch.matmul(attn, V).transpose(1,2).contiguous().view(BT, N, -1)
+        # (BT, H, N, K) × (BT, H, N, K, d_k) → (BT, H, N, 1, d_k) → sum over K dim
+        out = (attn.unsqueeze(-1) * V_topk).sum(dim=3)             # (BT, H, N, d_k)
+        out = out.transpose(1, 2).contiguous().view(BT, N, -1)    # (BT, N, H*d_k)
         return self.proj(out)
 
 

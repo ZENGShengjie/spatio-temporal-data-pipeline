@@ -21,7 +21,7 @@ def save_npy(path, arr):
     return path
 
 def write_metrics_summary(path: str, rows: List[Dict]):
-    keys = ["model", "MAE", "RMSE", "MAPE", "Corr", "train_time_s", "test_time_s"]
+    keys = ["model", "MAE", "RMSE", "MAPE", "Corr", "n_params", "best_epoch", "train_time_s", "test_time_s"]
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write("| " + " | ".join(keys) + " |\n")

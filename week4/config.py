@@ -13,7 +13,7 @@ GRID_DIR  = os.path.join(DATA_DIR, "grid_bj")
 WEEK4_DIR = os.environ.get("WEEK4_DIR",
                            os.path.join(os.path.dirname(__file__), ".."))
 CACHE_DIR = os.path.join(WEEK4_DIR, "data")
-PRED_DIR  = os.path.join(WEEK4_DIR, "results")
+PRED_DIR  = os.path.join(WEEK4_DIR, "results_v4_fix")
 LOG_DIR   = os.path.join(WEEK4_DIR, "logs")
 for d in [WEEK4_DIR, CACHE_DIR, PRED_DIR, LOG_DIR]:
     os.makedirs(d, exist_ok=True)
@@ -44,9 +44,9 @@ SPLIT = Split()
 class TrainCfg:
     seq_len: int = 48; horizon: int = 48
     batch:   int = 4                      # V4: STGCN/AGFormer memory tight → batch 4
-    epochs:  int = 20                     # V4: tighter epoch budget for advanced models
+    epochs:  int = 30                     # V4: allow full training (was 20, early stop too early)
     lr:      float = 1e-3; weight_decay: float = 1e-5
-    patience: int = 5
+    patience: int = 12                    # V4: patience 7→12 (prevents premature stop)
     hidden:  int = 64; layers: int = 2; dropout: float = 0.1
     seed:    int = DEFAULT_SEED
     device:  str = "cuda"

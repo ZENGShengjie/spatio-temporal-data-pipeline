@@ -73,7 +73,7 @@ class GCNBaseTrainer(BaseTrainer):
 
         run_batch_fn = self._make_run_batch(N, K_time, model, loss_fn)
 
-        best_val = float("inf"); best_state = None; no_improve = 0
+        best_val = float("inf"); best_state = None; no_improve = 0; best_epoch = -1
         start = time.time()
 
         for epoch in range(cfg.cfg_train.epochs):
@@ -99,7 +99,8 @@ class GCNBaseTrainer(BaseTrainer):
             if epoch % 5 == 0 or no_improve == 0:
                 print(f"    epoch {epoch:3d}  tr={tr_loss:.5f}  val={val_loss:.5f}")
             if np.isfinite(val_loss) and val_loss < best_val - 1e-5:
-                best_val = val_loss
+                best_val = val_loss; best_epoch = epoch
+                self.n_params = n_params
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 no_improve = 0
             else:
@@ -110,6 +111,7 @@ class GCNBaseTrainer(BaseTrainer):
         train_t = time.time() - start
         if best_state is None:
             best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+        self.best_epoch = best_epoch
         model.load_state_dict(best_state)
 
         t0 = time.time(); all_pred, all_gt = [], []
@@ -203,7 +205,7 @@ class STGCN(nn.Module):
         self.temporal_ln = nn.LayerNorm(hidden)
         self.decoder = nn.Sequential(
             nn.Linear(hidden, hidden), nn.ReLU(),
-            nn.Dropout(dropout), nn.Linear(hidden, horizon))
+            nn.Dropout(dropout), nn.Linear(hidden, horizon), nn.ReLU())
 
     def forward(self, x_node, edge_index_dict):
         B, N, F_in, T = x_node.shape

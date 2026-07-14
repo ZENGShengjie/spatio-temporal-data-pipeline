@@ -36,8 +36,8 @@ def parse_args():
                    choices=list_models())
     p.add_argument("--target", default="taxi_flow_total",
                    choices=["taxi_flow_total", "taxi_inflow", "taxi_outflow"])
-    p.add_argument("--tag", default="v4",
-                   help="result tag, e.g. v4 → *_v4_pred.npy")
+    p.add_argument("--tag", default="v4fix",
+                   help="result tag, e.g. v4fix → *_v4fix_pred.npy")
     p.add_argument("--ablation", action="store_true",
                    help="include ablation models (agformer_static, stf_loc_only)")
     p.add_argument("--skip_baseline", action="store_true",
@@ -114,6 +114,8 @@ def main():
                 "RMSE": round(metrics["RMSE"], 4),
                 "MAPE": round(metrics["MAPE"], 4),
                 "Corr": round(metrics["Corr"], 4),
+                "n_params": getattr(trainer, "n_params", None),
+                "best_epoch": getattr(trainer, "best_epoch", None),
                 "train_time_s": round(elapsed, 1),
                 "test_time_s": 0.0,
                 "pred_shape": str(pred.shape),

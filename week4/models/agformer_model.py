@@ -217,7 +217,7 @@ class AGFormerTrainer(GCNBaseTrainer):
             x_tf   = x_flat[:,2*N:,:].unsqueeze(1).expand(B, N, K_time, T)
             return torch.cat([x_flow, x_tf], dim=2)
 
-        best_val = float("inf"); best_state = None; no_improve = 0
+        best_val = float("inf"); best_state = None; no_improve = 0; best_epoch = -1
         start = time.time()
 
         for epoch in range(cfg.cfg_train.epochs):
@@ -253,7 +253,8 @@ class AGFormerTrainer(GCNBaseTrainer):
             if epoch % 5 == 0 or no_improve == 0:
                 print(f"    epoch {epoch:3d}  tr={tr_loss:.5f}  val={val_loss:.5f}")
             if np.isfinite(val_loss) and val_loss < best_val - 1e-5:
-                best_val = val_loss
+                best_val = val_loss; best_epoch = epoch
+                self.n_params = n_params
                 best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
                 no_improve = 0
             else:
@@ -264,6 +265,7 @@ class AGFormerTrainer(GCNBaseTrainer):
         train_t = time.time() - start
         if best_state is None:
             best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+        self.best_epoch = best_epoch
         model.load_state_dict(best_state)
 
         t0 = time.time(); all_pred, all_gt = [], []

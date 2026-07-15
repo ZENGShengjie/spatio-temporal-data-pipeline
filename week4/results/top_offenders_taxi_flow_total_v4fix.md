@@ -1,7 +1,7 @@
 # Cross-Model Error Grid Cells (v4fix)
 
-> 仅 STF 模型数据。AGFormer/STGCN top offenders 需从 `results/agformer_taxi_flow_total_v4fix_*.npy`
-> 和 `results/stgcn_taxi_flow_total_v4fix_*.npy` 重新运行 `week4/analysis_v4fix.py` 生成。
+> 仅 STF 模型数据。AGFormer/STGCN top offenders 需从 `week4/results/agformer_taxi_flow_total_v4fix_*.npy`
+> 和 `week4/results/stgcn_taxi_flow_total_v4fix_*.npy` 重新运行 `week4/analysis_v4fix.py` 生成。
 
 ## STF — Top 20 Error Grid Cells
 

@@ -31,5 +31,5 @@ STF 在四个时段均保持最优，夜间低谷 Corr 最高（0.823）。
 ---
 
 完整报告：
-- **周交付物**（详细实验、完整训练日志、全量 5 张配图）：`results/v4fix/WEEK4_FINAL_REPORT.md`
+- **周交付物**（详细实验、完整训练日志、全量 5 张配图）：`week4/results/v4fix/WEEK4_FINAL_REPORT.md`
 - **主报告总览**（含第 14 章 Week4 实验精简总结）：`docs/北京数据质量分析报告.md`

@@ -114,6 +114,10 @@ class GCNBaseTrainer(BaseTrainer):
         self.best_epoch = best_epoch
         model.load_state_dict(best_state)
 
+        # 保存最优权重（tag 通过调用方传入，优先级高于环境变量）
+        tag = os.environ.get("WEEK4_TAG", "v4fix")
+        self._save_checkpoint(model, best_state, target, tag)
+
         t0 = time.time(); all_pred, all_gt = [], []
         with torch.no_grad():
             for x, y in test_loader:
@@ -138,6 +142,35 @@ class GCNBaseTrainer(BaseTrainer):
     def _build_model(self, in_dim, horizon, ei_dict): raise NotImplementedError
     def _make_run_batch(self, N, K_time, model, loss_fn): raise NotImplementedError
     def _predict_batch(self, model, x, N, K_time): raise NotImplementedError
+
+    def _save_checkpoint(self, model, best_state, target, tag="v4fix"):
+        """Save best model weights to week4/weights/{model}_{target}_{tag}.pth."""
+        import json
+        WEEK4 = os.environ.get("WEEK4_DIR",
+                               os.path.join(os.path.dirname(__file__), ".."))
+        CKPT_DIR = os.path.join(WEEK4, "weights")
+        os.makedirs(CKPT_DIR, exist_ok=True)
+
+        filename = f"{self.name}_{target}_{tag}.pth"
+        path = os.path.join(CKPT_DIR, filename)
+
+        checkpoint = {
+            "model_state_dict": best_state,
+            "model_name": self.name,
+            "target": target,
+            "tag": tag,
+            "best_epoch": self.best_epoch,
+            "n_params": getattr(self, "n_params", None),
+        }
+        torch.save(checkpoint, path)
+        print(f"  [checkpoint] saved → {path}")
+
+    def load_weights(self, path, device=None):
+        """Load saved weights and return state dict for inference."""
+        if device is None:
+            device = make_device()
+        ckpt = torch.load(path, map_location=device)
+        return ckpt
 
 
 # ── GLU-TCN ──────────────────────────────────────────────────────────────

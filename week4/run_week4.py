@@ -1,16 +1,21 @@
 """Week4 主入口 — 高级时空模型训练与对比
 
 用法:
-    python run_week4.py --models stgcn agformer stf --target taxi_flow_total
+    python run_week4.py --models stgcn agformer stf --target taxi_flow_total --tag v4fix
 
     # 消融实验:
-    python run_week4.py --models stgcn agformer agformer_static --target taxi_flow_total
-    python run_week4.py --models stf stf_loc_only --target taxi_flow_total
+    python run_week4.py --models stgcn agformer agformer_static --target taxi_flow_total --tag v4fix
+    python run_week4.py --models stf stf_loc_only --target taxi_flow_total --tag v4fix
+
+    # 完整消融（含权重保存）:
+    python run_week4.py --models stgcn agformer stf agformer_static stf_loc_only \
+        --target taxi_flow_total --tag v4fix --ablation
 
 输出:
     <WEEK4_DIR>/results/<model>_pred.npy
     <WEEK4_DIR>/results/<model>_gt.npy
     <WEEK4_DIR>/results/summary_<target>_<tag>.md
+    <WEEK4_DIR>/weights/<model>_<target>_<tag>.pth   ← 最优权重文件
 """
 from __future__ import annotations
 import argparse

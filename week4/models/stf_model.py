@@ -127,5 +127,38 @@ class STFBaseTrainer(GCNBaseTrainer):
 
 
 class STFLocOnlyTrainer(STFBaseTrainer):
-    """Ablation: remove Env token and cross attention (local-only baseline)."""
+    """Ablation: remove Env token and cross attention (local-only baseline).
+
+    This isolates the contribution of global temporal context (Env token + cross-attention)
+    by stripping both components. Identical training config, data, and architecture
+    as STFBaseTrainer — only the forward pass differs.
+    """
     name = "stf_loc_only"
+
+    def _predict_batch(self, model, x, N, K_time):
+        return self._loc_only_forward(model, self._batch_to_node(x, N, K_time))
+
+    def _make_run_batch(self, N, K_time, model, loss_fn):
+        def run_batch(x, y):
+            x_node = self._batch_to_node(x, N, K_time)
+            out = self._loc_only_forward(model, x_node)
+            pred_loss = out.transpose(1,2).reshape(-1, N)
+            y_loss = y.transpose(1,2).reshape(-1,N) if y.dim()==3 else y
+            return loss_fn(pred_loss, y_loss)
+        return run_batch
+
+    @staticmethod
+    def _loc_only_forward(model, x_node):
+        """Forward pass with Env token and cross-attention stripped."""
+        B, N, F_in, T = x_node.shape
+        x_loc = x_node.permute(0,1,3,2).reshape(B*N, T, F_in)
+        x_loc = model.loc_proj(x_loc) + model.loc_pos  # (B*N, T, d)
+
+        # Conv1d temporal pooling (no cross-attention, no env context)
+        h = x_loc.permute(0,2,1)                       # (B*N, d, T)
+        h = model.loc_temporal(h)
+        h = h.permute(0,2,1)                           # (B*N, T, d)
+        h = model.loc_temporal_ln(h)
+
+        last = h[:, -1, :]                             # (B*N, d)
+        return model.decoder(last).reshape(B, N, -1)   # (B, N, horizon)

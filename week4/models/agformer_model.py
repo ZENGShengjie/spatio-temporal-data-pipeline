@@ -268,6 +268,9 @@ class AGFormerTrainer(GCNBaseTrainer):
         self.best_epoch = best_epoch
         model.load_state_dict(best_state)
 
+        # 保存最优权重
+        self._save_checkpoint(model, best_state, target)
+
         t0 = time.time(); all_pred, all_gt = [], []
         with torch.no_grad():
             for x, y in test_loader:
@@ -293,5 +296,143 @@ class AGFormerTrainer(GCNBaseTrainer):
 
 
 class AGFormerStaticTrainer(AGFormerTrainer):
-    """Ablation: freeze adaptive adj at static graph initialization."""
+    """Ablation: freeze adaptive adj at static graph initialization.
+
+    Identical architecture to AGFormerTrainer, but adaptive_adj parameters
+    are frozen after initialization — they do NOT update during training.
+    This isolates the value of *learning* a dynamic graph structure vs.
+    using the static prior alone.
+    """
     name = "agformer_static"
+
+    def fit_predict(self, flow_4d, time_features=None,
+                    target="taxi_flow_total", graph=None, **kwargs):
+        from data_loader import load_graph
+        if graph is None: graph = load_graph()
+
+        cell_max = flow_4d[:cfg.SPLIT.train_end].max(axis=0)
+        cell_max = np.maximum(cell_max, 1.0)
+        normed = (flow_4d / cell_max).clip(min=0).astype(np.float32)
+
+        spatial_ei = graph["spatial","adjacent","spatial"].edge_index.to(self.device)
+        similar_ei = graph["spatial","similar","spatial"].edge_index.to(self.device)
+        N = 1024
+
+        common = dict(seq_len=cfg.cfg_train.seq_len, horizon=cfg.cfg_train.horizon,
+                      time_features=time_features, target=target)
+        train_ds = SeqDataset(normed, start=cfg.SPLIT.train_start, end=cfg.SPLIT.train_end, **common)
+        val_ds   = SeqDataset(normed, start=cfg.SPLIT.train_end,   end=cfg.SPLIT.val_end,   **common)
+        test_ds  = SeqDataset(normed, start=cfg.SPLIT.val_end,     end=cfg.SPLIT.test_end,  **common)
+        print(f"  [data] train={len(train_ds)} val={len(val_ds)} test={len(test_ds)}")
+
+        horizon = cfg.cfg_train.horizon
+        K_time = time_features.shape[1] if time_features is not None else 0
+        F_in_per_node = 2 + K_time
+
+        train_loader = DataLoader(train_ds, batch_size=cfg.cfg_train.batch, shuffle=True)
+        val_loader   = DataLoader(val_ds,   batch_size=cfg.cfg_train.batch)
+        test_loader  = DataLoader(test_ds,  batch_size=cfg.cfg_train.batch)
+
+        model = AGFormer(F_in_per_node, cfg.cfg_train.hidden, horizon,
+                         n_layers=2, n_heads=4, K=16,
+                         dropout=cfg.cfg_train.dropout).to(self.device)
+
+        A_bias = build_static_adj_bias(graph, N, alpha=0.1)
+        for block in model.blocks:
+            block.spatial_attn.init_from_static(A_bias.to(self.device))
+            # ── 冻结：禁止自适应邻接矩阵在训练中更新 ──
+            block.spatial_attn.adaptive_adj.requires_grad = False
+        print(f"  [AGFormerStatic] adaptive adj frozen at static init (no gradient)")
+
+        n_params = sum(p.numel() for p in model.parameters())
+        n_trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        print(f"  [model] AGFormerStatic params: {n_params:,} (trainable: {n_trainable:,})")
+
+        # 只优化除了 adaptive_adj 之外的参数（它们本来就不被冻结，这里显式声明）
+        opt = torch.optim.Adam([
+            {"params": (p for n, p in model.named_parameters() if "adaptive_adj" not in n)},
+        ], lr=cfg.cfg_train.lr, weight_decay=cfg.cfg_train.weight_decay)
+        loss_fn = nn.SmoothL1Loss()
+
+        def batch_to_node(x_flat, N, K_time):
+            B, F_total, T = x_flat.shape
+            x_flow = x_flat[:,:2*N,:].reshape(B, N, 2, T)
+            x_tf   = x_flat[:,2*N:,:].unsqueeze(1).expand(B, N, K_time, T)
+            return torch.cat([x_flow, x_tf], dim=2)
+
+        best_val = float("inf"); best_state = None; no_improve = 0; best_epoch = -1
+        start = time.time()
+
+        for epoch in range(cfg.cfg_train.epochs):
+            model.train(); losses = []
+            for x, y in train_loader:
+                x, y = x.to(self.device), y.to(self.device)
+                B, F_total, T = x.shape
+                x_node = batch_to_node(x, N, K_time)
+                out = model(x_node, B, T)
+                pred_loss = out.transpose(1,2).reshape(-1, N)
+                y_loss = y.transpose(1,2).reshape(-1,N) if y.dim()==3 else y
+                loss = loss_fn(pred_loss, y_loss)
+                if not torch.isfinite(loss): opt.zero_grad(); continue
+                opt.zero_grad(); loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 5.0)
+                opt.step(); losses.append(loss.item())
+            tr_loss = float(np.mean(losses)) if losses else float("nan")
+
+            model.eval()
+            with torch.no_grad():
+                vs = []
+                for x, y in val_loader:
+                    x, y = x.to(self.device), y.to(self.device)
+                    B, F_total, T = x.shape
+                    x_node = batch_to_node(x, N, K_time)
+                    out = model(x_node, B, T)
+                    pred_loss = out.transpose(1,2).reshape(-1,N)
+                    y_loss = y.transpose(1,2).reshape(-1,N) if y.dim()==3 else y
+                    v = loss_fn(pred_loss, y_loss).item()
+                    if np.isfinite(v): vs.append(v)
+            val_loss = float(np.mean(vs)) if vs else float("nan")
+
+            if epoch % 5 == 0 or no_improve == 0:
+                print(f"    epoch {epoch:3d}  tr={tr_loss:.5f}  val={val_loss:.5f}")
+            if np.isfinite(val_loss) and val_loss < best_val - 1e-5:
+                best_val = val_loss; best_epoch = epoch
+                self.n_params = n_params
+                best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+                no_improve = 0
+            else:
+                no_improve += 1
+                if no_improve >= cfg.cfg_train.patience:
+                    print(f"    early stop @ epoch {epoch}"); break
+
+        train_t = time.time() - start
+        if best_state is None:
+            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+        self.best_epoch = best_epoch
+        model.load_state_dict(best_state)
+
+        # 保存最优权重
+        self._save_checkpoint(model, best_state, target)
+
+        t0 = time.time(); all_pred, all_gt = [], []
+        with torch.no_grad():
+            for x, y in test_loader:
+                x = x.to(self.device)
+                B, F_total, T = x.shape
+                x_node = batch_to_node(x, N, K_time)
+                out = model(x_node, B, T)
+                p = out.cpu().numpy()
+                Bp, Nn, Hh = p.shape
+                p = p.transpose(0,2,1).reshape(Bp*Hh, Nn)
+                B2, Hh2, Nn2 = y.shape
+                y_np = y.numpy().reshape(B2*Hh2, Nn2)
+                all_pred.append(p); all_gt.append(y_np)
+        pred = np.concatenate(all_pred, axis=0); gt = np.concatenate(all_gt, axis=0)
+        test_t = time.time() - t0
+
+        if target == "taxi_inflow":   scale = cell_max[0].flatten()
+        elif target == "taxi_outflow": scale = cell_max[1].flatten()
+        else:                           scale = (cell_max[0]+cell_max[1]).flatten()
+        pred = pred * scale[None,:]; gt = gt * scale[None,:]
+        print(f"  [done] train={train_t:.1f}s test={test_t:.1f}s pred={pred.shape}")
+        return pred, gt

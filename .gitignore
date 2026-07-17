@@ -6,13 +6,13 @@ dist/
 build/
 .eggs/
 
-# PyTorch
+# PyTorch model weights
 *.pth
 *.pt
 *.onnx
 checkpoints/
 
-# Data (large files)
+# Data files
 *.h5
 *.hdf5
 *.npz
@@ -30,7 +30,7 @@ checkpoints/
 Thumbs.db
 desktop.ini
 
-# IDE / Tooling
+# IDE
 .cursor/
 .idea/
 .vscode/
@@ -38,19 +38,8 @@ desktop.ini
 *.swo
 *.log
 
-# AWS
-aws*/
-!aws*/
-
-# Credentials
+# AWS credentials
 *.pem
 *.key
 credentials.json
 .env
-
-# Temporary / Build
-_w4push/
-_upload_tmp/
-repo_move/
-repo_check/
-*.tmp

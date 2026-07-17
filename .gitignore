@@ -1,61 +1,56 @@
-# ============ 凭证和敏感信息 ============
-.env
-*.pem
-credentials.txt
-*.key
-
-# ============ 数据文件（体积大，不上传） ============
-raw_*/
-*_raw/
-*.tif
-*.tiff
-*.zip
-*.tar.gz
-*.7z
-
-# ============ Python 缓存 ============
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+*.py[cod]
 *.egg-info/
+dist/
+build/
+.eggs/
 
-# ============ 输出文件 ============
-scene_list.txt
-*_raw.json
+# PyTorch
+*.pth
+*.pt
+*.onnx
+checkpoints/
+
+# Data (large files)
+*.h5
+*.hdf5
+*.npz
+*.npy
+*.csv
+*.pkl
+*.pkl.gz
 *.parquet
 *.feather
+*.sqlite
+*.db
 
-# ============ IDE ============
-.vscode/
-.idea/
-*.swp
+# OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# ============ 文档二进制 ============
-*.docx
-*.pdf
+# IDE / Tooling
+.cursor/
+.idea/
+.vscode/
+*.swp
+*.swo
+*.log
 
-# ============ week2 输出 (大体积) ============
-raw_nyc/
-cleaned_nyc/
-grid_nyc/
-features_nyc/
-graph_nyc/
-processed/
-osm_extracts/
-tmp_ndvi/
-logs/
-*.zip
-*.tif
-*.tiff
-*.parquet
-*.feather
-*.pt
-*.pkl
-*.ckpt
-*.hdf
-*.h5
-__pycache__/
+# AWS
+aws*/
+!aws*/
+
+# Credentials
+*.pem
+*.key
+credentials.json
+.env
+
+# Temporary / Build
+_w4push/
+_upload_tmp/
+repo_move/
+repo_check/
+*.tmp

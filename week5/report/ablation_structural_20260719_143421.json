@@ -1,0 +1,234 @@
+{
+  "timestamp": "20260719_143421",
+  "dataset": "structural",
+  "v3_injection_summary": {
+    "val": {
+      "actual_ratio": 0.0402,
+      "sustained_pct": 20.0
+    },
+    "test": {
+      "actual_ratio": 0.0402,
+      "sustained_pct": 20.0
+    }
+  },
+  "structural_injection_summary": {
+    "val": {
+      "actual_ratio": 0.0403,
+      "sustained_pct": 69.4
+    },
+    "test": {
+      "actual_ratio": 0.0402,
+      "sustained_pct": 72.2
+    }
+  },
+  "single": {
+    "statistical": {
+      "precision": 0.7478,
+      "recall": 0.8216,
+      "f1": 0.7829,
+      "auc": 0.905,
+      "threshold": 0.985,
+      "val_f1": 0.8312,
+      "v3_thresh": 0.985
+    },
+    "prediction": {
+      "precision": 0.925,
+      "recall": 0.7881,
+      "f1": 0.8511,
+      "auc": 0.8927,
+      "threshold": 0.455,
+      "val_f1": 0.8061,
+      "v3_thresh": 0.305
+    },
+    "vae": {
+      "precision": 0.1217,
+      "recall": 0.6068,
+      "f1": 0.2027,
+      "auc": 0.7117,
+      "threshold": 0.135,
+      "val_f1": 0.208,
+      "v3_thresh": 0.08
+    },
+    "transformer": {
+      "precision": 0.0399,
+      "recall": 0.1745,
+      "f1": 0.0649,
+      "auc": 0.4993,
+      "threshold": 0.01,
+      "val_f1": 0.0726,
+      "v3_thresh": 0.01
+    }
+  },
+  "per_type": {
+    "statistical": {
+      "surge": {
+        "precision": 0.797,
+        "recall": 0.8274,
+        "f1": 0.8119
+      },
+      "drop": {
+        "precision": 0.8107,
+        "recall": 0.8257,
+        "f1": 0.8181
+      },
+      "sustained": {
+        "precision": 0.7472,
+        "recall": 0.8226,
+        "f1": 0.7831
+      }
+    },
+    "prediction": {
+      "surge": {
+        "precision": 0.9266,
+        "recall": 0.8018,
+        "f1": 0.8597
+      },
+      "drop": {
+        "precision": 0.9297,
+        "recall": 0.7814,
+        "f1": 0.8491
+      },
+      "sustained": {
+        "precision": 0.9258,
+        "recall": 0.7886,
+        "f1": 0.8517
+      }
+    },
+    "vae": {
+      "surge": {
+        "precision": 0.1329,
+        "recall": 0.6385,
+        "f1": 0.22
+      },
+      "drop": {
+        "precision": 0.1182,
+        "recall": 0.5488,
+        "f1": 0.1945
+      },
+      "sustained": {
+        "precision": 0.1224,
+        "recall": 0.6077,
+        "f1": 0.2038
+      }
+    },
+    "transformer": {
+      "surge": {
+        "precision": 0.0414,
+        "recall": 0.1725,
+        "f1": 0.0667
+      },
+      "drop": {
+        "precision": 0.0393,
+        "recall": 0.1648,
+        "f1": 0.0635
+      },
+      "sustained": {
+        "precision": 0.0401,
+        "recall": 0.1737,
+        "f1": 0.0652
+      }
+    }
+  },
+  "fusion": {
+    "dual_stat_pred": {
+      "precision": 0.7556,
+      "recall": 0.8347,
+      "f1": 0.7932,
+      "auc": 0.9117,
+      "weights": {
+        "statistical": 0.95,
+        "prediction": 0.05
+      },
+      "threshold": 0.94,
+      "val_f1": 0.8285
+    },
+    "triple_stat_pred_vae": {
+      "precision": 0.9216,
+      "recall": 0.8364,
+      "f1": 0.877,
+      "auc": 0.9167,
+      "weights": {
+        "statistical": 0.7,
+        "prediction": 0.1,
+        "vae": 0.2
+      },
+      "threshold": 0.74,
+      "val_f1": 0.837
+    },
+    "quad_all": {
+      "precision": 0.9216,
+      "recall": 0.8364,
+      "f1": 0.877,
+      "auc": 0.9167,
+      "weights": {
+        "statistical": 0.7,
+        "prediction": 0.1,
+        "vae": 0.2,
+        "transformer": -0.0
+      },
+      "threshold": 0.74,
+      "val_f1": 0.837
+    }
+  },
+  "v3_baseline": {
+    "statistical": {
+      "f1": 0.791,
+      "precision": 0.7544,
+      "recall": 0.8314,
+      "auc": 0.91,
+      "threshold": 0.985
+    },
+    "prediction": {
+      "f1": 0.8695,
+      "precision": 0.8581,
+      "recall": 0.8813,
+      "auc": 0.9376,
+      "threshold": 0.305
+    },
+    "vae": {
+      "f1": 0.1765,
+      "precision": 0.1065,
+      "recall": 0.5158,
+      "auc": 0.6674,
+      "threshold": 0.08
+    },
+    "transformer": {
+      "f1": 0.1786,
+      "precision": 0.1097,
+      "recall": 0.4801,
+      "auc": 0.6586,
+      "threshold": 0.01
+    },
+    "fusion": {
+      "dual_stat_pred": {
+        "f1": 0.7991,
+        "precision": 0.7613,
+        "recall": 0.8408
+      },
+      "triple_stat_pred_vae": {
+        "f1": 0.9165,
+        "precision": 0.9977,
+        "recall": 0.8475
+      },
+      "quad_all": {
+        "f1": 0.7866,
+        "precision": 0.7407,
+        "recall": 0.8385
+      }
+    }
+  },
+  "comparison": {
+    "delta_f1_by_method": {
+      "statistical": -0.0081,
+      "prediction": -0.0184,
+      "vae": 0.0262,
+      "transformer": -0.1137
+    },
+    "delta_f1_by_fusion": {
+      "dual_stat_pred": -0.0059,
+      "triple_stat_pred_vae": -0.0395,
+      "quad_all": 0.0904
+    }
+  },
+  "note": "Scores from V3 model weights evaluated against structural labels. Thresholds re-optimized on structural val split. Per-type metrics use structural test labels with injected_events_test_structural.csv."
+}

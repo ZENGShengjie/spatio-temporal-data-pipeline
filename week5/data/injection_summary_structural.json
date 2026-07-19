@@ -1,0 +1,70 @@
+{
+  "version": "structural_ablation_structural",
+  "timestamp": "2026-07-19T08:20:58.835876",
+  "seed_val": 999,
+  "seed_test": 1999,
+  "val_summary": {
+    "split": "val_structural",
+    "seed": 999,
+    "actual_ratio": 0.04025607638888889,
+    "n_anomaly_cells": 20776,
+    "total_cells": 516096,
+    "n_events": 632,
+    "type_counts": {
+      "sustained": 452,
+      "surge": 90,
+      "drop": 90
+    },
+    "spatial_ratio": 0.5332278481012658,
+    "type_breakdown": {
+      "surge": {
+        "n_cells": 2940,
+        "ratio": 0.005696614583333333,
+        "n_events": 90
+      },
+      "drop": {
+        "n_cells": 3426,
+        "ratio": 0.006638299851190476,
+        "n_events": 90
+      },
+      "sustained": {
+        "n_cells": 14410,
+        "ratio": 0.02792116195436508,
+        "n_events": 452
+      }
+    }
+  },
+  "test_summary": {
+    "split": "test_structural",
+    "seed": 1999,
+    "actual_ratio": 0.040166015625,
+    "n_anomaly_cells": 24678,
+    "total_cells": 614400,
+    "n_events": 685,
+    "type_counts": {
+      "sustained": 482,
+      "drop": 108,
+      "surge": 95
+    },
+    "spatial_ratio": 0.5781021897810219,
+    "type_breakdown": {
+      "surge": {
+        "n_cells": 3143,
+        "ratio": 0.005115559895833333,
+        "n_events": 95
+      },
+      "drop": {
+        "n_cells": 3729,
+        "ratio": 0.0060693359375,
+        "n_events": 108
+      },
+      "sustained": {
+        "n_cells": 17806,
+        "ratio": 0.028981119791666666,
+        "n_events": 482
+      }
+    }
+  },
+  "comparison_note": "对照 V3 baseline: 保持 4.02% 总异常率不变，sustained 从 20% 升至 70%，连片从 50% 升至 60%。目标: 验证结构型异常场景下 VAE/TAE 性能变化。",
+  "data_leakage": "compliant"
+}

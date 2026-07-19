@@ -114,6 +114,15 @@ python3 run_week3.py --models gru --target taxi_flow_total --tag v2
 # Week4 时空模型
 cd ~/spatio-temporal-pipeline/week4
 python3 run_week4.py --models stf agformer stgcn --target taxi_flow_total --tag v4fix
+
+# Week5 异常检测
+cd ~/spatio-temporal-pipeline/week5
+python3 run_v3_full_eval.py  # 4 方法 + 多组融合 + 全量评估
+
+# Week5 结构性异常消融
+python3 _inject_structural.py                            # 注入 surge/drop/sustained
+python3 _rerun_struct.py && python3 _rerun_tae_only.py   # 4 方法分数重算
+python3 _run_ablation_structural.py                      # 消融评估入口
 ```
 
 ---
@@ -124,6 +133,8 @@ python3 run_week4.py --models stf agformer stgcn --target taxi_flow_total --tag 
 |--------|------|------|
 | ⭐⭐⭐ | [`docs/北京数据质量分析报告.md`](docs/北京数据质量分析报告.md) | 完整研究报告（P0 溯源 + Week3 基线 + Week4 实验 + 局限性分析 + 综合总结）|
 | ⭐⭐⭐ | [`week4/report/WEEK4_REPORT.md`](week4/report/WEEK4_REPORT.md) | Week4 实验专项报告 |
+| ⭐⭐⭐ | [`week5/docs/ablation_structural_REPORT.md`](week5/docs/ablation_structural_REPORT.md) | **Week5 结构性异常消融实验**（V3 vs surge/drop/sustained）|
+| ⭐⭐⭐ | [`week5/README.md`](week5/README.md) | **Week5 异常检测模块**（4 方法 + 融合框架 + V3 闭环评估）|
 | ⭐⭐ | [`week3/report/WEEK3_REPORT.md`](week3/report/WEEK3_REPORT.md) | Week3 基线实验报告 |
 | ⭐⭐ | [`week4/results/v4fix/WEEK4_FINAL_REPORT.md`](week4/results/v4fix/WEEK4_FINAL_REPORT.md) | Week4 完整训练日志 |
 
@@ -135,7 +146,9 @@ python3 run_week4.py --models stf agformer stgcn --target taxi_flow_total --tag 
 - ✅ **Week 2**：数据清洗 → 网格划分 → 时空特征工程 → 异构图构建
 - ✅ **Week 3**：7 模型时序基线（ARIMA/Prophet/LSTM/GRU/GCN/GAT/GRU+GCN 残差）
 - ✅ **Week 4**：时空联合建模（STF/AGFormer/STGCN）+ 消融实验 + 局限性分析
-- ⏳ **Week 5+**：STF 规模化 / 自适应图预热 / 级联架构
+- ✅ **Week 5**：异常检测 4 范式（statistical / prediction / VAE / Transformer-AE）+ 多组融合 + V3 闭环评估
+- ✅ **Week5 结构性消融**：V3 vs surge/drop/sustained 三种结构性异常对照实验（详见 `week5/docs/ablation_structural_REPORT.md`）
+- ⏳ **Week 6+**：STF 规模化 / 自适应图预热 / 级联架构
 
 ---
 

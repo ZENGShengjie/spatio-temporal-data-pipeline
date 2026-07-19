@@ -423,3 +423,47 @@ JSON 格式示例：
 | V1 | 早期 | 基础框架搭建，四类方法并行实现，暴露 P0-P3 问题 |
 | V2 | 中期 | 分级修复：注入体系重构、预测法链路打通、TAE 坍缩治理、融合框架建立 |
 | V3 | 2026-07-19 | Bug 修复（TAE 维度/返回值/参数）+ 完整评估 + 融合实验闭环 |
+
+---
+
+## 11. 异常类型消融实验（V3 vs Structural）
+
+> **目的**：仅替换异常形态（surge / drop / sustained 三种结构性异常），保留全部 V3 模型权重与超参，考察各方法在新场景下的鲁棒性与融合增益。
+
+### 11.1 核心结论速览
+
+| 方法 | V3 F1 | Structural F1 | Δ |
+|---|---:|---:|---:|
+| statistical (3σ) | 0.791 | **0.783** | −0.008 最鲁棒 |
+| prediction (STF) | 0.870 | 0.851 | −0.018 最强单方法 |
+| vae | 0.177 | 0.203 | +0.026 |
+| transformer_ae | 0.179 | 0.065 | −0.114 V3 权重泛化失败 |
+| dual_stat_pred | 0.799 | 0.793 | −0.006 |
+| triple_stat_pred_vae | **0.917** | 0.877 | −0.040 V3 最优 |
+| **quad_all (4方法)** | 0.787 | **0.877** | **+0.090 结构性新 SOTA** |
+
+### 11.2 关键发现
+
+1. **prediction (STF) 在两种数据集都最强**（V3 0.870 / Struct 0.851），跨异常形态稳定。
+2. **quad_all 4 方法融合**在 Structural 上反超 +0.09 — V3 point anomaly 用 triple 更优，Structural 用更宽集成 quad_all 更优，**不同异常模式对应不同融合配方**。
+3. **TAE V3 权重泛化失败**（−0.114）：因 `transformer_ae_v3.py:75` 在 `mask_ratio>0 && self.training` 路径上 shape mismatch bug，V3 缓存的 TAE 权重不适用于结构性异常。
+4. **statistical 仍是工业级最稳基线**（−0.008 几乎无损），适合作为任何异常检测系统的兜底层。
+
+### 11.3 详细文档
+
+完整 115 行消融报告（含 per-type F1、5 个章节分析、生产部署建议）：`week5/docs/ablation_structural_REPORT.md`
+
+### 11.4 可复现
+
+```bash
+# 1. 注入 surge/drop/sustained 三种结构性异常
+python3 _inject_structural.py
+
+# 2. 4 方法分数重算（沿用 V3 权重，仅换异常形态）
+python3 _rerun_struct.py    # stat / pred / vae
+python3 _rerun_tae_only.py  # TAE 单独跑
+
+# 3. 消融评估入口
+python3 _run_ablation_structural.py
+# → report/ablation_structural_<timestamp>.json
+```

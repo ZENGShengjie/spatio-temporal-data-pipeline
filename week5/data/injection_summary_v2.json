@@ -1,0 +1,59 @@
+{
+  "version": "v2_injection",
+  "timestamp": "2026-07-18T06:45:35.530054",
+  "val_summary": {
+    "split": "val",
+    "seed": 42,
+    "target_ratio": 0.04,
+    "actual_ratio": 0.04018050905257937,
+    "n_anomaly_cells": 20737,
+    "total_cells": 516096,
+    "n_events": 902,
+    "type_counts": {
+      "surge": 384,
+      "drop": 379,
+      "sustained": 139
+    },
+    "spatial_ratio": 0.4700665188470067,
+    "temporal_bin_counts": {
+      "5": 108,
+      "6": 97,
+      "1": 95,
+      "7": 94,
+      "4": 93,
+      "9": 87,
+      "0": 83,
+      "8": 83,
+      "2": 83,
+      "3": 79
+    }
+  },
+  "test_summary": {
+    "split": "test",
+    "seed": 142,
+    "target_ratio": 0.04,
+    "actual_ratio": 0.04015625,
+    "n_anomaly_cells": 24672,
+    "total_cells": 614400,
+    "n_events": 1002,
+    "type_counts": {
+      "surge": 401,
+      "drop": 393,
+      "sustained": 208
+    },
+    "spatial_ratio": 0.49600798403193613,
+    "temporal_bin_counts": {
+      "2": 112,
+      "5": 107,
+      "7": 105,
+      "0": 102,
+      "1": 101,
+      "3": 98,
+      "4": 96,
+      "8": 96,
+      "6": 95,
+      "9": 90
+    }
+  },
+  "data_leakage": "compliant — 仅验证集和测试集注入，训练集保持纯净"
+}

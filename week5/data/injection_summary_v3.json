@@ -1,0 +1,12 @@
+{
+  "seed": 123,
+  "method": "rebuilt_from_injected_events_val.csv",
+  "total_labels": 3897,
+  "anomaly_ratio": 0.00755,
+  "n_events": 902,
+  "type_counts": {
+    "drop": 379,
+    "sustained": 139,
+    "surge": 384
+  }
+}

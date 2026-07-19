@@ -1,0 +1,41 @@
+{
+  "timestamp": "v3",
+  "results": {
+    "statistical": {
+      "precision": 0.1151,
+      "recall": 0.9715,
+      "f1": 0.2058,
+      "auc": 0.8295,
+      "val_auc": 0.4926,
+      "val_f1": 0.2058,
+      "threshold": 0.27
+    },
+    "prediction": {
+      "precision": 0.843,
+      "recall": 0.9604,
+      "f1": 0.8979,
+      "auc": 0.9765,
+      "val_auc": 0.5109,
+      "val_f1": 0.8979,
+      "threshold": 0.08
+    },
+    "vae": {
+      "precision": 0.0403,
+      "recall": 0.9141,
+      "f1": 0.0772,
+      "auc": 0.5015,
+      "val_auc": 0.4627,
+      "val_f1": 0.0772,
+      "threshold": 0.07
+    },
+    "transformer": {
+      "precision": 0.0569,
+      "recall": 0.7873,
+      "f1": 0.1062,
+      "auc": 0.6208,
+      "val_auc": 0.5009,
+      "val_f1": 0.1062,
+      "threshold": 0.05
+    }
+  }
+}

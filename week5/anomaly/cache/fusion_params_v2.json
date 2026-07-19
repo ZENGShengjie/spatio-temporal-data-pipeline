@@ -1,0 +1,10 @@
+{
+  "weights": {
+    "statistical": 0.8,
+    "prediction": 0.1,
+    "vae": 0.1,
+    "transformer": 0.0
+  },
+  "threshold": 0.5,
+  "target": "taxi_flow_total"
+}

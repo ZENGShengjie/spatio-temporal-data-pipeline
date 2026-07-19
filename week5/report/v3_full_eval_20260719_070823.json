@@ -1,0 +1,82 @@
+{
+  "timestamp": "20260719_070823",
+  "single": {
+    "statistical": {
+      "precision": 0.7544,
+      "recall": 0.8314,
+      "f1": 0.791,
+      "auc": 0.91,
+      "val_auc": 0.9722,
+      "val_f1": 0.8417,
+      "threshold": 0.985
+    },
+    "prediction": {
+      "precision": 0.8581,
+      "recall": 0.8813,
+      "f1": 0.8695,
+      "auc": 0.9376,
+      "val_auc": 0.9527,
+      "val_f1": 0.7637,
+      "threshold": 0.305
+    },
+    "vae": {
+      "precision": 0.1065,
+      "recall": 0.5158,
+      "f1": 0.1765,
+      "auc": 0.6674,
+      "val_auc": 0.6642,
+      "val_f1": 0.1717,
+      "threshold": 0.08
+    },
+    "transformer": {
+      "precision": 0.1097,
+      "recall": 0.4801,
+      "f1": 0.1786,
+      "auc": 0.6586,
+      "val_auc": 0.6553,
+      "val_f1": 0.172,
+      "threshold": 0.01
+    }
+  },
+  "fusion": {
+    "dual_stat_pred": {
+      "precision": 0.7613,
+      "recall": 0.8408,
+      "f1": 0.7991,
+      "auc": 0.9149,
+      "weights": {
+        "statistical": 0.95,
+        "prediction": 0.05
+      },
+      "threshold": 0.94,
+      "val_f1": 0.839
+    },
+    "triple_stat_pred_vae": {
+      "precision": 0.9977,
+      "recall": 0.8475,
+      "f1": 0.9165,
+      "auc": 0.9237,
+      "weights": {
+        "statistical": 0.9,
+        "prediction": 0.1,
+        "vae": -0.0
+      },
+      "threshold": 0.9,
+      "val_f1": 0.8375
+    },
+    "quad_all": {
+      "precision": 0.7407,
+      "recall": 0.8385,
+      "f1": 0.7866,
+      "auc": 0.9131,
+      "weights": {
+        "statistical": 0.9,
+        "prediction": 0.0,
+        "vae": 0.0,
+        "transformer": 0.1
+      },
+      "threshold": 0.88,
+      "val_f1": 0.8389
+    }
+  }
+}

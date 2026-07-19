@@ -1,0 +1,9 @@
+{
+  "method": "dual_stat_pred",
+  "w_stat": 0.9500000000000001,
+  "w_pred": 0.05,
+  "threshold": 0.9500000000000002,
+  "val_f1": 0.8426,
+  "test_f1": 0.9103,
+  "test_auc": 0.9701
+}

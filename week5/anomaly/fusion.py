@@ -21,8 +21,11 @@ import numpy as np
 import pandas as pd
 from scipy import ndimage
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from config import (
+import numpy as np
+import pandas as pd
+from scipy import ndimage
+
+from week5.config import (
     FUSION_CFG, CACHE_DIR, DATA_DIR,
     VAL_END, VAL_HOURS, TEST_HOURS, N_CELLS,
     cache_path, cache_json,

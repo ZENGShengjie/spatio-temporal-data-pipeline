@@ -18,8 +18,9 @@ from typing import Tuple, Literal
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from config import (
+import numpy as np
+
+from week5.config import (
     PRED_CFG, CACHE_DIR, VAL_END, TEST_END,
     TRAIN_END, VAL_HOURS, TEST_HOURS, N_CELLS,
     cache_path, cache_json, DATA_DIR, WEEK4_DIR,
@@ -56,7 +57,7 @@ class PredictionAnomalyDetector:
     # ── 数据加载 ───────────────────────────────────────────────────────────────
 
     def _load_data(self):
-        from data_loader import get_flow_1d
+        from week5.data_loader import get_flow_1d
 
         # 地面真值：验证集用注入后数据，测试集用原始无注入数据
         val_injected_path = os.path.join(DATA_DIR, "flow_val_injected.npy")
@@ -134,7 +135,7 @@ class PredictionAnomalyDetector:
             import torch
             import sys as _sys
             _sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-            from data_loader import get_flow_1d
+            from week5.data_loader import get_flow_1d
 
             # 动态导入 Week4 模型
             w4_models_dir = os.path.join(WEEK4_DIR, "models")
@@ -156,7 +157,7 @@ class PredictionAnomalyDetector:
 
     def _generate_history_mean_baseline(self) -> np.ndarray:
         """用训练集历史均值作为 baseline prediction"""
-        from data_loader import get_flow_1d, get_time_group_labels
+        from week5.data_loader import get_flow_1d, get_time_group_labels
 
         gt_all = get_flow_1d(self.target)
         train_flow = gt_all[:TRAIN_END]
@@ -291,7 +292,7 @@ class PredictionAnomalyDetector:
 
     def predict_scores(self, flow: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """给定任意序列计算得分和误差方向（用于在线检测）"""
-        from data_loader import get_flow_1d, get_time_group_labels, get_time_features
+        from week5.data_loader import get_flow_1d, get_time_group_labels, get_time_features
 
         gt = get_flow_1d(self.target)
         val = gt[TRAIN_END:VAL_END]

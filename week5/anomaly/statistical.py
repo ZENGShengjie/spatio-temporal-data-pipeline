@@ -18,13 +18,15 @@ from typing import Literal, Tuple, Dict
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from config import (
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+
+from week5.config import (
     STAT_CFG, CACHE_DIR, VAL_END, TEST_END,
     TRAIN_END, VAL_HOURS, TEST_HOURS, N_CELLS,
     cache_path, cache_json, DATA_DIR,
 )
-from data_loader import get_flow_1d, get_time_group_labels, get_hour_labels
+from week5.data_loader import get_flow_1d, get_time_group_labels, get_hour_labels
 
 
 class StatisticalAnomalyDetector:

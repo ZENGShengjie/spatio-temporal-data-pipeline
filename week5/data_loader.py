@@ -21,7 +21,8 @@ _W4_DIR = _REPO / "week4"
 _W4_CONFIG_PATH = _W4_DIR / "config.py"
 
 _ns: dict = {"__file__": str(_W4_CONFIG_PATH)}
-exec(open(_W4_CONFIG_PATH).read(), _ns)
+with open(_W4_CONFIG_PATH, "r", encoding="utf-8") as _f:
+    exec(_f.read(), _ns)
 _SPLIT = _ns.get("SPLIT")
 if _SPLIT is not None:
     TRAIN_END   = int(_SPLIT.train_end)   # 2784
@@ -37,11 +38,65 @@ VAL_HOURS   = VAL_END - TRAIN_END
 TEST_HOURS  = TEST_END - VAL_END
 N_HOURS     = TEST_END
 
-# 数据路径 — 通过环境变量配置，默认 /home/ubuntu/data/
-_NPZ_PATH = Path(os.environ.get(
-    "BJ_FLOW_NPZ",
-    "/home/ubuntu/data/cleaned_bj/taxi_p4_4d.npz"
-))
+# ── 数据路径配置（支持多时间段）───────────────────────────────────────────────
+# BJ_PERIOD 选择时间段：P4=2015-11~2016-04（默认），BJ13/14/15/16
+_BJ_PERIOD = os.environ.get("BJ_PERIOD", "P4")
+
+_PERIOD_FILES = {
+    "P4":   "/home/ubuntu/data/cleaned_bj/taxi_p4_4d.npz",
+    "BJ13": "/home/ubuntu/data/cleaned_bj/taxi_bj13_4d.npz",
+    "BJ14": "/home/ubuntu/data/cleaned_bj/taxi_bj14_4d.npz",
+    "BJ15": "/home/ubuntu/data/cleaned_bj/taxi_bj15_4d.npz",
+    "BJ16": "/home/ubuntu/data/cleaned_bj/taxi_bj16_4d.npz",
+}
+
+def get_period() -> str:
+    """返回当前时间段标识"""
+    return _BJ_PERIOD
+
+def get_period_info() -> dict:
+    """返回所有可用时间段的信息摘要"""
+    import os as _os
+    info = {}
+    for p, f in _PERIOD_FILES.items():
+        if not _os.path.exists(f):
+            info[p] = {"path": f, "exists": False, "shape": None}
+            continue
+        d = np.load(f, allow_pickle=True)
+        info[p] = {
+            "path": f,
+            "exists": True,
+            "shape": d["flow"].shape,
+            "t_start": str(d["timestamps"][0]),
+            "t_end":   str(d["timestamps"][-1]),
+        }
+    return info
+
+def _get_npz_path() -> Path:
+    return Path(_PERIOD_FILES.get(_BJ_PERIOD, _PERIOD_FILES["P4"]))
+
+# ── Period-aware 数据集划分 ──────────────────────────────────────────────────
+
+def get_splits(period: str = None) -> Tuple[int, int, int]:
+    """返回指定时间段的 (TRAIN_END, VAL_END, TEST_END)
+
+    P4:  固定边界 (2784, 3288, 3888)
+    其他: 按数据长度 60/20/20 动态计算
+    """
+    p = period or _BJ_PERIOD
+    if p == "P4":
+        return (2784, 3288, 3888)
+    # 动态计算
+    path = _PERIOD_FILES.get(p)
+    if path is None:
+        raise ValueError(f"Unknown period {p}, available: {list(_PERIOD_FILES.keys())}")
+    import os as _os
+    if not _os.path.exists(path):
+        raise FileNotFoundError(f"Period file not found: {path}")
+    total = np.load(path)["flow"].shape[0]
+    train_end = int(total * 0.60)
+    val_end   = int(total * 0.80)
+    return (train_end, val_end, total)
 
 
 # ── 全局数据（惰性加载）────────────────────────────────────────────────────────
@@ -53,10 +108,11 @@ _normed_flow: Optional[np.ndarray] = None
 
 
 def _load_raw_npz() -> Tuple[np.ndarray, np.ndarray]:
-    """直接读取 npz 文件"""
-    data = np.load(_NPZ_PATH)
-    flow = data["flow"].astype(np.float32)   # (3888, 2, 32, 32)
-    ts   = data["timestamps"]                # (3888,) datetime64
+    """直接读取当前时间段的 npz 文件"""
+    path = _get_npz_path()
+    data = np.load(path)
+    flow = data["flow"].astype(np.float32)   # (T, 2, 32, 32)
+    ts   = data["timestamps"]                # (T,) datetime64
     return flow, ts
 
 

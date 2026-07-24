@@ -20,8 +20,11 @@ import numpy as np
 import pandas as pd
 from scipy import ndimage
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from config import (
+import numpy as np
+import pandas as pd
+from scipy import ndimage
+
+from week5.config import (
     FUSION_CFG, CACHE_DIR, DATA_DIR,
     VAL_END, VAL_HOURS, TEST_HOURS, N_CELLS, TRAIN_END,
     cache_path, cache_json,
@@ -84,7 +87,21 @@ def build_spatial_mask(scores: np.ndarray, threshold: float = 0.5) -> np.ndarray
 def aggregate_spatial_events_fast(
     scores: np.ndarray,
     threshold: float = 0.5,
+    single_point_score: float = 0.85,
+    min_patch_size: int = 12,
 ) -> List[AnomalyEvent]:
+    """3D 连通域聚合 + 两类兜底规则（与热力图实时异常对齐）。
+
+    入库优先级（从高到低）：
+      1. 3D 时空连通域聚合事件（主逻辑，任何规模的连通片）
+      2. 连片兜底：单时间步空间连通片 ≥min_patch_size 格，标记为 patch_marginal
+      3. 单点兜底：孤立格点得分 ≥single_point_score，标记为 point_single
+
+    新增的两条兜底规则确保：
+      - 所有在热力图上肉眼可见的异常（≥12格/单步 或 高分孤立点）
+        在事件列表中都有对应记录，解决"有红无事件"的体感脱节
+      - 真正的时空连续大事件优先收录，零散噪声不会淹没列表
+    """
     T, N = scores.shape
     is_anomaly = scores >= threshold
     H, W = 32, 32
@@ -93,6 +110,8 @@ def aggregate_spatial_events_fast(
     struct_3d[1, :, :] = True
     labeled_3d, n_events = ndimage.label(anomaly_3d, structure=struct_3d)
     events = []
+    covered = np.zeros_like(is_anomaly)        # 已被连通事件覆盖的格点
+    next_eid = 0
     for eid in range(1, n_events + 1):
         mask_3d = labeled_3d == eid
         mask_2d = mask_3d.reshape(T, H * W)
@@ -100,15 +119,74 @@ def aggregate_spatial_events_fast(
         t_start, t_end = int(t_idx.min()), int(t_idx.max())
         duration = t_end - t_start + 1
         n_cells = len(t_idx)
+
+        # 单格单步的 3D 组件直接跳过，交给 fallback 处理
+        # 这样 fallback 才能区分：真正的时空大事件 vs 零散孤立异常
+        if n_cells == 1 and duration == 1:
+            continue  # 不标记 covered，fallback 兜底会处理
+
         n_center = r_idx[len(r_idx) // 2] * W + c_idx[len(c_idx) // 2]
         avg_score = float(scores[mask_2d].mean())
-        is_spatial = (n_cells > 1) or (duration > 3)
+        is_spatial = (n_cells > 1) or (duration > 1)
         events.append(AnomalyEvent(
-            event_id=eid - 1, t_start=t_start, t_end=t_end, duration=duration,
+            event_id=next_eid, t_start=t_start, t_end=t_end, duration=duration,
             n_cells=n_cells, n_center=int(n_center),
             event_type="spatial_sustained",
             avg_score=avg_score, is_spatial=is_spatial,
         ))
+        covered |= mask_2d
+        next_eid += 1
+
+    # ── 兜底 1：单时间步空间连通片 ≥min_patch_size ─────────────────────────────
+    # 对每个时间步单独做 2D 连通域分析，不满足主逻辑但足够大的连片也收录
+    struct_2d = ndimage.generate_binary_structure(2, 1)
+    patch_covered = np.zeros(T, dtype=bool)   # 标记哪些时间步已处理过
+    for t in range(T):
+        frame = is_anomaly[t].reshape(H, W)
+        labeled_2d, n_patches = ndimage.label(frame, structure=struct_2d)
+        for pid in range(1, n_patches + 1):
+            comp = labeled_2d == pid
+            sz = int(comp.sum())
+            if sz < min_patch_size:
+                continue
+            # 该连通片有多少格点未被主逻辑覆盖（可能部分被3D事件覆盖）
+            comp_flat = comp.flatten()
+            uncovered = comp_flat & ~covered[t]
+            n_uncovered = int(uncovered.sum())
+            if n_uncovered < min_patch_size:
+                continue
+            t_idx_arr = np.full(sz, t, dtype=int)
+            n_idx_arr = np.where(comp_flat)[0]
+            n_center = n_idx_arr[len(n_idx_arr) // 2]
+            events.append(AnomalyEvent(
+                event_id=next_eid,
+                t_start=t, t_end=t, duration=1,
+                n_cells=sz, n_center=int(n_center),
+                event_type="patch_marginal",   # 兜底入库，等级由 pipeline 统一判定
+                avg_score=float(scores[t][comp_flat].mean()),
+                is_spatial=True,
+            ))
+            next_eid += 1
+            patch_covered[t] = True
+
+    # ── 兜底 2：单点高得分孤立点 ───────────────────────────────────────────────
+    single_mask = is_anomaly & ~covered
+    if single_mask.any():
+        t_idx, n_idx = np.where(single_mask)
+        for t_i, n_i in zip(t_idx, n_idx):
+            if scores[t_i, n_i] < single_point_score:
+                continue
+            r, c = divmod(int(n_i), W)
+            events.append(AnomalyEvent(
+                event_id=next_eid,
+                t_start=int(t_i), t_end=int(t_i), duration=1,
+                n_cells=1, n_center=int(n_i),
+                event_type="point_single",
+                avg_score=float(scores[t_i, n_i]),
+                is_spatial=False,
+            ))
+            next_eid += 1
+
     return events
 
 

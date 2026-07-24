@@ -16,10 +16,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 LOCAL_PATH = Path(__file__).resolve().parent
-sys.path.insert(0, str(LOCAL_PATH.parent))
-
-from config import REC_CFG, TRAIN_END, VAL_END, cache_path
-from data_loader import get_flow_1d
+from week5.config import REC_CFG, TRAIN_END, VAL_END, cache_path
+from week5.data_loader import get_flow_1d
 
 
 class MLPVAE(nn.Module):

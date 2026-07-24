@@ -43,3 +43,19 @@ desktop.ini
 *.key
 credentials.json
 .env
+
+# Local caches and generated files
+week5/cache/
+week5/*.npy
+week5/cache/*.npy
+week5/cache/*.npz
+.streamlit/
+.streamlit/secrets.toml
+streamlit.log
+tile_cache/
+*.png  # skip auto-generated figures
+
+# Data directories (large files, not tracked)
+data/
+weights/
+week6/weights/

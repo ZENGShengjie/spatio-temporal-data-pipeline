@@ -35,7 +35,7 @@ st.set_page_config(
 )
 
 # ── 常量（时间范围从 API health 动态获取）────────────────────────────────────
-API_BASE = os.environ.get("API_BASE", "http://98.92.162.80:8000")
+API_BASE = os.environ.get("API_BASE", "http://localhost:8000")  # 可通过 export API_BASE=... 覆盖 EC2 IP
 GRID_H = GRID_W = 32
 N_CELLS = GRID_H * GRID_W
 

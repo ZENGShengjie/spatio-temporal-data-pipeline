@@ -1,0 +1,23 @@
+{
+  "batch_fast": {
+    "mode": "fast",
+    "split": "test",
+    "total_ms": 1778.1182059998173,
+    "throughput_steps_per_sec": 337.43538420305765,
+    "n_steps": 600,
+    "n_anomalies": 33295,
+    "n_events": 5485,
+    "n_alerts": 237
+  },
+  "realtime_fast": {
+    "n_steps": 100,
+    "avg_latency_ms": 18.024885640015782,
+    "p50_latency_ms": 17.804756500026997,
+    "p95_latency_ms": 20.484936650382224,
+    "p99_latency_ms": 21.41192083038732,
+    "peak_ram_mb": 1611.84765625
+  },
+  "realtime_structural": {
+    "error": "'NoneType' object has no attribute 'predict_scores'"
+  }
+}

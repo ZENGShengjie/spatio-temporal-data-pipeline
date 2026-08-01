@@ -27,12 +27,9 @@ week6.evaluation/
 │   ├── pipeline_inference_mode.py     ← torch.inference_mode()
 │   ├── pipeline_lru_cache.py          ← LRU 缓存
 │   └── streamlit_heatmap_downsampling.py  ← Plotly 降采样
-└── results/
-    ├── baseline/                      ← 任务1 基线结果
-    ├── optuna/                        ← 任务2 优化结果
-    ├── interpretability/              ← 任务3 可解释性图表
-    └── profiling/                     ← 任务4 性能对比
 ```
+
+> **Week7 产物**（reports / JSON / PNG / 重训权重）已迁移到 `week7/` 目录，详见 [`week7/README.md`](../../week7/README.md)。
 
 ## 执行前提
 
@@ -52,7 +49,7 @@ cd /home/ubuntu/amazon
 
 | 任务 | 脚本 | 触发命令 |
 |------|------|---------|
-| 1. 性能评估 | `evaluation/evaluate.py` | `python -m week6.evaluation.evaluation.evaluate --split test --mode fast --output results/baseline/` |
+| 1. 性能评估 | `evaluation/evaluate.py` | `python -m week6.evaluation.evaluation.evaluate --split test --mode fast --output ../../week7/results/baseline/` |
 | 2. 超参优化 | `optimization/optuna_stf.py` | `python -m week6.evaluation.optimization.optuna_stf --n_trials 30 --timeout 7200` |
 | 3. 可解释性 | `interpretability/{attention_vis,shap_analysis,anomaly_attribution}.py` | 三个脚本独立运行 |
 | 4. 性能优化 | `profiling/profile_pipeline.py` + 应用 `patches/` | 见各文件 |

@@ -30,7 +30,6 @@ docs/*.pdf
 taxi_local/
 
 # ── Recordings (anywhere in repo) ─────────────────────────────────────────────
-*.mp4
 "week6/2026-08-01*/"
 
 # ── Week1/Week2 (old experiment dirs) ─────────────────────────────────────────

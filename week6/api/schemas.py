@@ -169,6 +169,31 @@ class EventsQueryResponse(BaseModel):
     events: List[AnomalyEvent]
 
 
+class TimeslotsRequest(BaseModel):
+    """时间槽查询请求"""
+    target: str = Field(
+        ...,
+        description="查询目标：night_valley=夜间低谷、morning_peak=早高峰、evening_peak=晚高峰",
+    )
+    t_min: Optional[int] = Field(
+        default=None,
+        description="时间范围下界（全局索引），None=使用测试集起点",
+    )
+    t_max: Optional[int] = Field(
+        default=None,
+        description="时间范围上界（全局索引），None=使用测试集终点",
+    )
+
+
+class TimeslotsResponse(BaseModel):
+    """时间槽查询响应"""
+    target: str
+    t: int = Field(description="对应的全局时间步")
+    hour_estimate: int = Field(description="估计的整点小时（0~23）")
+    t_min: int
+    t_max: int
+
+
 # ── 健康检查 ─────────────────────────────────────────────────────────────────
 
 class HealthResponse(BaseModel):

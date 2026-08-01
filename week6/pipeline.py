@@ -191,9 +191,12 @@ class SpatiotemporalPipeline:
         self._fitted = False
 
         # 缓存阈值（从 week5 缓存读取，或使用传入值）
-        self.stat_threshold  = stat_threshold  or 0.996    # 统计法（更严格）
-        self.pred_threshold  = pred_threshold  or 0.360     # 预测法（更严格）
-        self.fusion_threshold = fusion_threshold or 0.90    # 三融合（更严格）
+        # 注意：0.996(stat) + 0.36(pred) + 0.90(fused) 是历史最严苛值，2026-07-28 观察
+        # 到会让晚高峰连片热区(流量高但稳定)只标出少量边缘格点，热点核心反而不标。
+        # 适度放宽后，大片异常热点会整片被标记，更符合业务直觉。
+        self.stat_threshold  = stat_threshold  or 0.992    # 统计法（更严格）
+        self.pred_threshold  = pred_threshold  or 0.300     # 预测法（更严格）
+        self.fusion_threshold = fusion_threshold or 0.80    # 三融合（更严格）
 
         # 融合权重（fast 模式固定，structural 模式从缓存）
         self.fusion_weights = fusion_weights or {
@@ -452,7 +455,7 @@ class SpatiotemporalPipeline:
         flow = get_flow_1d("taxi_flow_total")
         train_end, val_end, test_end = get_splits()
         # 用测试集最后 warmup_steps 步作为初始窗口
-        start = val_end + test_end - warmup_steps
+        start = test_end - warmup_steps
         self._window = [flow[start + i] for i in range(warmup_steps)]
         print(f"[Pipeline] realtime initialized with {warmup_steps} warmup steps")
 
@@ -490,8 +493,11 @@ class SpatiotemporalPipeline:
 
         # 计算当前步得分（stat + pred）
         window_arr = np.stack(self._window)          # (48, N)
-        scores_stat = self._stat_detector.predict_scores(window_arr)
-        scores_pred = self._pred_detector.predict_scores(new_data)
+        # stat 期望单步：取最后一帧
+        scores_stat = self._stat_detector.predict_scores(window_arr[-1:])
+        # _pred_detector.predict_scores 返回 (scores, direction)
+        _pred_out = self._pred_detector.predict_scores(new_data)
+        scores_pred = _pred_out[0] if isinstance(_pred_out, tuple) else _pred_out
 
         # 融合（与 batch 一致）
         if self.mode == "fast":
@@ -613,11 +619,21 @@ class SpatiotemporalPipeline:
         return result
 
     def _infer_warning_level(self, event: AnomalyEvent) -> int:
-        if event.n_cells >= 20 and event.duration >= 3:
-            return 3
-        elif event.n_cells >= 20:
+        """统一预警等级规则（与 anomaly_attribution.infer_level 一致）。
+
+        口径（v3, 2026-07-28）：
+            level=2 (重要)  n_cells >= 20
+            level=1 (一般)  n_cells >= 16
+            level=0         其他
+
+        注意：与 pipeline.WarningEngine 的实时预警规则不同 —— 此处用于
+        离线 retrospective 分析，duration 字段对事后判断无意义（事件
+        整体时长可能跨越多个时间步，但单时间步不易捕捉）。
+        """
+        nc = getattr(event, "n_cells", 0)
+        if nc >= 20:
             return 2
-        elif event.n_cells >= 16:
+        if nc >= 16:
             return 1
         return 0
 

@@ -1,3 +1,42 @@
+# ── Temporary / debug / one-off scripts ─────────────────────────────────────────
+_*/
+*.bak
+*.mp4
+*.pdf
+
+# ── Local results and intermediate outputs ──────────────────────────────────────
+week3/results_v2/
+week4/results_v4/
+week5/results_v2/
+week5/week5_results/
+week5_results/
+results/
+evidence/
+evidence/
+repo_check/
+repo_move/
+aws/
+docs/*.png
+docs/*.pdf
+
+# ── TaxiBJ local data ───────────────────────────────────────────────────────────
+taxi_local/
+
+# ── Zoom meeting recordings ─────────────────────────────────────────────────────
+"week6/2026-08-01*/"
+
+# ── Week1/Week2 (old experiment dirs) ─────────────────────────────────────────
+"week 1"/
+"week 2"/
+week1/
+week2/
+week3_explore.py
+
+# Data directories (large files, not tracked)
+data/
+weights/
+week6/weights/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -54,8 +93,3 @@ week5/cache/*.npz
 streamlit.log
 tile_cache/
 *.png  # skip auto-generated figures
-
-# Data directories (large files, not tracked)
-data/
-weights/
-week6/weights/

@@ -19,7 +19,13 @@ from contextlib import asynccontextmanager
 from typing import Dict, Any, Optional
 
 import numpy as np
-import torch
+import pandas as pd
+try:
+    import torch
+except ImportError:
+    # 2026-07-28: Python310 装 torch 太慢；让 API 在无 torch 时仍可启动，
+    # /api/health 里 cuda_available=False 即可。
+    torch = None  # type: ignore
 
 # ── 路径 ──────────────────────────────────────────────────────────────────────
 _REPO = Path(__file__).resolve().parents[2]
@@ -35,6 +41,7 @@ from week6.api.schemas import (
     AnomalyDetectRequest, AnomalyDetectResponse, AnomalyScore, AnomalyCell,
     EventsQueryRequest, EventsQueryResponse, AnomalyEvent,
     HealthResponse,
+    TimeslotsRequest, TimeslotsResponse,
 )
 
 # ── 全局状态 ─────────────────────────────────────────────────────────────────
@@ -138,7 +145,7 @@ def health_check():
         val_end, test_end = 3288, 3888
     return HealthResponse(
         status="ok" if _cache_loaded else "warming_up",
-        cuda_available=torch.cuda.is_available(),
+        cuda_available=(torch is not None and torch.cuda.is_available()),
         pipeline_mode=_pipeline.mode if _pipeline else "not_initialized",
         cache_loaded=_cache_loaded,
         period=get_period() if _cache_loaded else "P4",
@@ -318,12 +325,16 @@ def detect_anomaly(req: AnomalyDetectRequest):
     top_alert = alerts[-1] if alerts else None
 
     # 时间戳转 ISO 字符串
+    # 2026-07-31 BUG FIX: NPZ 文件里的 timestamps 数组按 60min 步长生成（162 天），
+    # 但 flow 数据本身按 30min 步长（3888 帧 ≈ 81 天）。两者采样率不匹配。
+    # 直接按 30min 步长重新生成 timestamps，从已知起点 2015-11-01 00:00 起。
     ts_str = None
-    if timestamps is not None and 0 <= t_local < len(timestamps):
-        try:
-            ts_str = str(np.datetime_as_string(timestamps[t_local], unit="m"))
-        except Exception:
-            ts_str = str(timestamps[t_local])
+    try:
+        t_start = np.datetime64("2015-11-01T00:00:00")
+        ts_correct = t_start + np.timedelta64(int(t_local) * 30, "m")
+        ts_str = str(np.datetime_as_string(ts_correct, unit="m"))
+    except Exception as e:
+        ts_str = f"t={t_global}"
 
     elapsed_ms = (time.time() - t0) * 1000
     return AnomalyDetectResponse(
@@ -396,6 +407,135 @@ def query_events(req: EventsQueryRequest | None = None):
     return EventsQueryResponse(
         total=len(event_models),
         events=event_models,
+    )
+
+
+@app.post("/api/timeslots", response_model=TimeslotsResponse)
+def query_timeslots(req: TimeslotsRequest):
+    """
+    动态查询典型时间槽：夜间低谷、早高峰、晚高峰对应的 t 值。
+
+    实现逻辑：
+    1. 拉取 t_min~t_max 范围内所有网格的平均流量
+    2. 按时间步聚合，计算每步的平均流量
+    3. 对 night_valley 找最低的 5 个时间点，返回中位数
+    4. 对 morning_peak/evening_peak 找最高的 5 个时间点，返回中位数
+
+    这样即使数据起点不是 00:00，也能准确找到对应的 t。
+    """
+    t0 = time.time()
+    pipe = _get_pipeline()
+
+    # 获取时间边界
+    try:
+        from week5.data_loader import get_splits, get_timestamps
+        _, val_end, test_end = get_splits()
+        timestamps = get_timestamps()
+    except Exception:
+        val_end, test_end = 3288, 3888
+        timestamps = None
+
+    t_min = req.t_min if req.t_min is not None else val_end
+    t_max = req.t_max if req.t_max is not None else test_end - 1
+
+    if t_max - t_min < 12:
+        raise HTTPException(400, "时间范围至少需要 12 步")
+
+    try:
+        result = pipe.run_batch(split="test")
+    except Exception as e:
+        raise HTTPException(500, f"Pipeline 运行失败: {e}")
+
+    flow = result["flow"]
+    T_steps = len(flow)
+
+    # 2026-07-31 BUG FIX：原始 NPZ 里 timestamps 是按 60min 步长生成的 (162 天)，
+    # 但 flow 数据本身是 30min 步长（3888 帧 ≈ 81 天）。两者不能一一对应。
+    # 重新按 30min 步长生成 timestamps（与 flow 索引真实语义一致）。
+    t_start_ts = np.datetime64("2015-11-01T00:00:00")
+    timestamps_30min = np.array(
+        [t_start_ts + np.timedelta64(30 * i, "m") for i in range(len(timestamps))],
+        dtype="datetime64[s]",
+    )
+
+    # 计算每步的平均流量
+    step_flows = []
+    valid_ts = []
+    for t_global in range(t_min, t_max + 1):
+        t_local = t_global - val_end
+        if 0 <= t_local < T_steps:
+            step_flows.append(float(np.nanmean(flow[t_local])))
+            # 用重建的 30min 步长 timestamps 提取小时
+            hour = None
+            if t_local < len(timestamps_30min):
+                try:
+                    hour = int(pd.Timestamp(timestamps_30min[t_local]).hour)
+                except Exception:
+                    pass
+            valid_ts.append((t_global, step_flows[-1], hour))
+        else:
+            step_flows.append(0.0)
+            valid_ts.append((t_global, 0.0, None))
+
+    if len(step_flows) == 0:
+        raise HTTPException(500, "没有有效的时间步数据")
+
+    # 按时序排序的 (t, flow, hour)
+    sorted_by_flow = sorted(valid_ts, key=lambda x: x[1])
+    sorted_desc = sorted_by_flow[::-1]
+
+    if req.target == "night_valley":
+        # 夜间低谷：限定 02~06 点之间找最低（避免误选中午 12:00 的极低流量点）
+        _candidates = [c for c in valid_ts if c[2] is not None and 2 <= c[2] <= 6]
+        if not _candidates:
+            _candidates = sorted_by_flow[:10]
+        # 按流量升序选 10 个，再用 hour 中位数筛出最贴近窗口中心的那个
+        top10 = sorted(_candidates, key=lambda x: x[1])[:10]
+        # 最佳 hour 应在窗口内（02~06），取中位数
+        target_hour = int(np.median([c[2] for c in top10]))
+        # 选 top10 中 hour 离 target_hour 最近的 t（避免 median 取整跨过去）
+        def _score(c):
+            return (abs(c[2] - target_hour), c[1])
+        best = min(top10, key=_score)
+        best_t = best[0]
+        best_hour = best[2]
+        candidates = top10
+    elif req.target == "morning_peak":
+        # 早高峰：限定 07~10 点之间找最高
+        _candidates = [c for c in valid_ts if c[2] is not None and 7 <= c[2] <= 10]
+        if not _candidates:
+            _candidates = sorted_desc[:10]
+        top10 = sorted(_candidates, key=lambda x: -x[1])[:10]
+        target_hour = int(np.median([c[2] for c in top10]))
+        def _score(c):
+            return (abs(c[2] - target_hour), -c[1])
+        best = min(top10, key=_score)
+        best_t = best[0]
+        best_hour = best[2]
+        candidates = top10
+    elif req.target == "evening_peak":
+        # 晚高峰：限定 17~20 点（关键修复：之前全局最大容易撞到早晨通勤峰）
+        _candidates = [c for c in valid_ts if c[2] is not None and 17 <= c[2] <= 20]
+        if not _candidates:
+            _candidates = sorted_desc[:10]
+        top10 = sorted(_candidates, key=lambda x: -x[1])[:10]
+        target_hour = int(np.median([c[2] for c in top10]))
+        def _score(c):
+            return (abs(c[2] - target_hour), -c[1])
+        best = min(top10, key=_score)
+        best_t = best[0]
+        best_hour = best[2]
+        candidates = top10
+    else:
+        raise HTTPException(400, f"未知的 target: {req.target}，支持: night_valley, morning_peak, evening_peak")
+
+    elapsed_ms = (time.time() - t0) * 1000
+    return TimeslotsResponse(
+        target=req.target,
+        t=best_t,
+        hour_estimate=best_hour,
+        t_min=t_min,
+        t_max=t_max,
     )
 
 

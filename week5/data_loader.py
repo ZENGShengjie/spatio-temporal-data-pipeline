@@ -12,8 +12,41 @@ from typing import Tuple, Optional, Literal
 
 import numpy as np
 import pandas as pd
-import torch
-from torch.utils.data import Dataset, DataLoader
+# 2026-07-28: torch 可选 —— 没装 torch 时，DataSet / DataLoader 不会被调用（API 路径只用 cache）；
+# 这里做个轻量 stub 让 from week5.data_loader import * 不崩
+try:
+    import torch as _torch
+    from torch.utils.data import Dataset, DataLoader
+    _TORCH_OK = True
+except ImportError:
+    _TORCH_OK = False
+
+    class Dataset:  # type: ignore[no-redef]
+        """Stub — API 路径不用 DataSet"""
+        pass
+
+    class DataLoader:  # type: ignore[no-redef]
+        """Stub — API 路径不用 DataLoader"""
+        pass
+
+    class _TorchStub:
+        """替换 `torch.from_numpy(arr).float()` —— 直接返回 numpy（流 predict 路径用不到 tensor）"""
+        @staticmethod
+        def from_numpy(arr):
+            return arr
+        @staticmethod
+        def tensor(x):
+            return np.asarray(x)
+        @staticmethod
+        def stack(arrs):
+            return np.stack(arrs)
+        @staticmethod
+        def is_tensor(x):
+            return isinstance(x, np.ndarray)
+        float = float
+        long = int
+
+    torch = _TorchStub()  # noqa: F821
 
 # ── Week4 配置常量（通过 exec 读取，不依赖 data_loader）────────────────────────
 _REPO = Path(__file__).resolve().parents[1]          # /home/ubuntu/spatio-temporal-pipeline
@@ -42,12 +75,47 @@ N_HOURS     = TEST_END
 # BJ_PERIOD 选择时间段：P4=2015-11~2016-04（默认），BJ13/14/15/16
 _BJ_PERIOD = os.environ.get("BJ_PERIOD", "P4")
 
+# 2026-07-28: 兼容本地演示（无 EC2 `/home/ubuntu/data/cleaned_bj/`）。
+# 优先本机 _cache 目录里的 taxi_p4_4d.npz（合成数据 / 历史缓存）；
+# 若本机不存在该文件，再退回 EC2 路径。注意：路径在 import 时固定，
+# 所以 NPZ 必须先于 API 启动前放好（脚本 _make_synth_npz.py 会写入）。
+import os as _os_for_paths
+_REPO_ROOT = Path(r"E:\amazon")
+_LOCAL_CACHE_P4 = _REPO_ROOT / "week5" / "cache" / "taxi_p4_4d.npz"
+_LOCAL_DATA_BJ = _REPO_ROOT / "data" / "cleaned_bj"
+
+_P4_PATH = (
+    str(_LOCAL_CACHE_P4)
+    if _LOCAL_CACHE_P4.exists()
+    else "/home/ubuntu/data/cleaned_bj/taxi_p4_4d.npz"
+)
+_BJ13_PATH = (
+    str(_LOCAL_DATA_BJ / "taxi_bj13_4d.npz")
+    if (_LOCAL_DATA_BJ / "taxi_bj13_4d.npz").exists()
+    else "/home/ubuntu/data/cleaned_bj/taxi_bj13_4d.npz"
+)
+_BJ14_PATH = (
+    str(_LOCAL_DATA_BJ / "taxi_bj14_4d.npz")
+    if (_LOCAL_DATA_BJ / "taxi_bj14_4d.npz").exists()
+    else "/home/ubuntu/data/cleaned_bj/taxi_bj14_4d.npz"
+)
+_BJ15_PATH = (
+    str(_LOCAL_DATA_BJ / "taxi_bj15_4d.npz")
+    if (_LOCAL_DATA_BJ / "taxi_bj15_4d.npz").exists()
+    else "/home/ubuntu/data/cleaned_bj/taxi_bj15_4d.npz"
+)
+_BJ16_PATH = (
+    str(_LOCAL_DATA_BJ / "taxi_bj16_4d.npz")
+    if (_LOCAL_DATA_BJ / "taxi_bj16_4d.npz").exists()
+    else "/home/ubuntu/data/cleaned_bj/taxi_bj16_4d.npz"
+)
+
 _PERIOD_FILES = {
-    "P4":   "/home/ubuntu/data/cleaned_bj/taxi_p4_4d.npz",
-    "BJ13": "/home/ubuntu/data/cleaned_bj/taxi_bj13_4d.npz",
-    "BJ14": "/home/ubuntu/data/cleaned_bj/taxi_bj14_4d.npz",
-    "BJ15": "/home/ubuntu/data/cleaned_bj/taxi_bj15_4d.npz",
-    "BJ16": "/home/ubuntu/data/cleaned_bj/taxi_bj16_4d.npz",
+    "P4":   _P4_PATH,
+    "BJ13": _BJ13_PATH,
+    "BJ14": _BJ14_PATH,
+    "BJ15": _BJ15_PATH,
+    "BJ16": _BJ16_PATH,
 }
 
 def get_period() -> str:

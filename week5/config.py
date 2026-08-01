@@ -145,5 +145,14 @@ def cache_json(name: str) -> str:
     return os.path.join(CACHE_DIR, f"{name}.json")
 
 # ── 设备 ───────────────────────────────────────────────────────────────────────
-import torch
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+# 2026-07-28: Streamlit 跑在无 torch 环境（Python310 + streamlit-only 依赖），
+# 但 api/main.py 仍需 import week6.pipeline → week5.config。如果 torch 缺失，
+# 回退到 "cpu" 占位（pipeline 里 torch 调用在没 GPU 时本来就是 cpu）。
+try:
+    import torch
+    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+except ImportError:
+    DEVICE = "cpu"
+    _TORCH_AVAILABLE = False
+else:
+    _TORCH_AVAILABLE = True

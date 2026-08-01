@@ -28,10 +28,18 @@ from week5.config import (
 
 
 def smooth_error(errors: np.ndarray, window: int = 2) -> np.ndarray:
-    """1小时滑动平均，过滤偶然波动"""
+    """1小时滑动平均，过滤偶然波动
+
+    Args:
+        errors: (T, N) 或 (N,)
+        window: 滑动窗口
+    """
     if window <= 1:
         return errors
     kernel = np.ones(window) / window
+    if errors.ndim == 1:
+        # (N,) 单步情况：直接返回（无窗口意义）
+        return errors
     T, N = errors.shape
     smoothed = np.zeros_like(errors)
     for n in range(N):
@@ -303,13 +311,27 @@ class PredictionAnomalyDetector:
         train_flow = gt[:TRAIN_END]
 
         pred = np.zeros_like(flow)
+        # 注意：flow 可能是 (T, N) 或 (N,)，mask 长度必须跟 flow 对齐
+        if flow.ndim == 1:
+            # 单步 (N,)，tg 只取前 1 步匹配
+            tg_flow = tg[:1]
+        else:
+            tg_flow = tg[:len(flow)]
         for gid in uniq_tg:
             mask_train = tg[:TRAIN_END] == gid
             if mask_train.sum() > 0:
                 group_mean = train_flow[mask_train].mean(axis=0)
             else:
                 group_mean = train_flow.mean(axis=0)
-            mask_flow = tg[:len(flow)] == gid if len(flow) <= len(tg) else np.zeros(len(flow), dtype=bool)
+            # shape 对齐：flow=(N,) 时 mask 是 (1,)，但 group_mean=(N,)
+            # 用 broadcast 写入
+            mask_flow = tg_flow == gid
+            if mask_flow.shape[0] != pred.shape[0]:
+                # flow 单步 (N,) 情况：直接全赋值（只对应一个 gid）
+                if mask_flow.any():
+                    pred[:] = group_mean
+                    break
+                continue
             pred[mask_flow] = group_mean
 
         rel_err, direction = self._compute_relative_error(pred, flow)

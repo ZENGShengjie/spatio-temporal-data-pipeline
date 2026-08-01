@@ -1,8 +1,14 @@
-# ── Temporary / debug / one-off scripts ─────────────────────────────────────────
-_*/
-*.bak
-*.mp4
-*.pdf
+# ── Temporary / debug / one-off scripts at repo root ───────────────────────────
+# (only top-level - intentional scripts inside week6/ etc still tracked)
+/*.py
+/*.sh
+/*.ps1
+/*.bat
+/*.json
+/*.log
+/2026*/
+/2025*/
+
 
 # ── Local results and intermediate outputs ──────────────────────────────────────
 week3/results_v2/

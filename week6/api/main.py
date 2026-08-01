@@ -370,16 +370,18 @@ def detect_anomaly(req: AnomalyDetectRequest):
     top_alert = alerts[-1] if alerts else None
 
     # 时间戳转 ISO 字符串
-    # 2026-07-31 BUG FIX: NPZ 文件里的 timestamps 数组按 60min 步长生成（162 天），
-    # 但 flow 数据本身按 30min 步长（3888 帧 ≈ 81 天）。两者采样率不匹配。
-    # 直接按 30min 步长重新生成 timestamps，从已知起点 2015-11-01 00:00 起。
-    # 2026-08-01 BUG FIX: 之前用 t_local = t_global - val_end，但起点仍按全局 t=0 算，
-    # 导致测试集时间戳偏早（差 3288 步 ≈ 42 天）。修复：用 t_global 而非 t_local。
+    # 2026-08-01 BUG FIX: 之前手写 t_global * 30min（实际上 NPZ 是 60min 步长），
+    # 导致测试集时间戳偏早约 42-76 天。
+    # 直接用 pipe.run_batch() 返回 result["timestamps"]（真值），fallback 走
+    # 60min 重建。
     ts_str = None
     try:
-        t_start = np.datetime64("2015-11-01T00:00:00")
-        ts_correct = t_start + np.timedelta64(int(t_global) * 30, "m")
-        ts_str = str(np.datetime_as_string(ts_correct, unit="m"))
+        if timestamps is not None and 0 <= int(t_global) < len(timestamps):
+            ts_str = str(np.datetime_as_string(timestamps[int(t_global)], unit="m"))
+        else:
+            t_start = np.datetime64("2015-11-01T00:00:00")
+            ts_correct = t_start + np.timedelta64(int(t_global) * 60, "m")
+            ts_str = str(np.datetime_as_string(ts_correct, unit="m"))
     except Exception as e:
         ts_str = f"t={t_global}"
 
@@ -496,14 +498,9 @@ def query_timeslots(req: TimeslotsRequest):
     flow = result["flow"]
     T_steps = len(flow)
 
-    # 2026-07-31 BUG FIX：原始 NPZ 里 timestamps 是按 60min 步长生成的 (162 天)，
-    # 但 flow 数据本身是 30min 步长（3888 帧 ≈ 81 天）。两者不能一一对应。
-    # 重新按 30min 步长生成 timestamps（与 flow 索引真实语义一致）。
-    t_start_ts = np.datetime64("2015-11-01T00:00:00")
-    timestamps_30min = np.array(
-        [t_start_ts + np.timedelta64(30 * i, "m") for i in range(len(timestamps))],
-        dtype="datetime64[s]",
-    )
+    # 直接使用 NPZ 里的真实 timestamps，不再合成。
+    # NPZ length 是 3888，可直接按 t_global 索引。
+    timestamps_arr = timestamps if timestamps is not None else None
 
     # 计算每步的平均流量
     step_flows = []
@@ -514,9 +511,9 @@ def query_timeslots(req: TimeslotsRequest):
             step_flows.append(float(np.nanmean(flow[t_local])))
             # 用重建的 30min 步长 timestamps 提取小时
             hour = None
-            if t_global < len(timestamps_30min):
+            if timestamps_arr is not None and 0 <= t_global < len(timestamps_arr):
                 try:
-                    hour = int(pd.Timestamp(timestamps_30min[t_global]).hour)
+                    hour = int(pd.Timestamp(timestamps_arr[t_global]).hour)
                 except Exception:
                     pass
             valid_ts.append((t_global, step_flows[-1], hour))

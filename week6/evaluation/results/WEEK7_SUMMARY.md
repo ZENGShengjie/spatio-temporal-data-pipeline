@@ -15,6 +15,8 @@
 | ④ 性能优化 | API 缓存命中 / cold | **9.8ms / 1276ms (130x)** | [`REPORT_TASK4_OPTIMIZATION.md`](REPORT_TASK4_OPTIMIZATION.md) |
 
 > **所有数字均经过 2026-08-01 重跑 + 实测验证**，与旧报告核心数据一致，仅 Task4 因发现并修复了 LRU 缓存未生效的 bug 而有重大数字更新。
+>
+> **附加 sanity 闸口**：[`WEEK7_SANITY_REPORT.md`](WEEK7_SANITY_REPORT.md) —— 全链路 API E2E 走查，含 S2 LRU / S3 事件 / S4 时间戳一致性，最终**顺手修了 2 处时间戳索引 bug**（`api/main.py` line 379/519 用 `t_local` 错，应为 `t_global`）。
 
 ---
 

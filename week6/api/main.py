@@ -373,10 +373,12 @@ def detect_anomaly(req: AnomalyDetectRequest):
     # 2026-07-31 BUG FIX: NPZ 文件里的 timestamps 数组按 60min 步长生成（162 天），
     # 但 flow 数据本身按 30min 步长（3888 帧 ≈ 81 天）。两者采样率不匹配。
     # 直接按 30min 步长重新生成 timestamps，从已知起点 2015-11-01 00:00 起。
+    # 2026-08-01 BUG FIX: 之前用 t_local = t_global - val_end，但起点仍按全局 t=0 算，
+    # 导致测试集时间戳偏早（差 3288 步 ≈ 42 天）。修复：用 t_global 而非 t_local。
     ts_str = None
     try:
         t_start = np.datetime64("2015-11-01T00:00:00")
-        ts_correct = t_start + np.timedelta64(int(t_local) * 30, "m")
+        ts_correct = t_start + np.timedelta64(int(t_global) * 30, "m")
         ts_str = str(np.datetime_as_string(ts_correct, unit="m"))
     except Exception as e:
         ts_str = f"t={t_global}"
@@ -512,9 +514,9 @@ def query_timeslots(req: TimeslotsRequest):
             step_flows.append(float(np.nanmean(flow[t_local])))
             # 用重建的 30min 步长 timestamps 提取小时
             hour = None
-            if t_local < len(timestamps_30min):
+            if t_global < len(timestamps_30min):
                 try:
-                    hour = int(pd.Timestamp(timestamps_30min[t_local]).hour)
+                    hour = int(pd.Timestamp(timestamps_30min[t_global]).hour)
                 except Exception:
                     pass
             valid_ts.append((t_global, step_flows[-1], hour))

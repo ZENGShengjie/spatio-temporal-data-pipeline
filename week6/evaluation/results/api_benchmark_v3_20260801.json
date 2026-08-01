@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-08-01T13:08:05",
+  "cold_latencies_ms": [
+    1276.4,
+    14.0,
+    10.9
+  ],
+  "warm_n": 100,
+  "warm_median_ms": 9.8,
+  "warm_p50_ms": 9.8,
+  "warm_p95_ms": 11.8,
+  "warm_p99_ms": 162.5,
+  "warm_mean_ms": 11.4,
+  "warm_min_ms": 9.5,
+  "warm_max_ms": 162.5,
+  "warm_errors": 0,
+  "diff_n": 30,
+  "diff_median_ms": 10.9,
+  "diff_p50_ms": 10.9,
+  "diff_p95_ms": 11.3,
+  "diff_p99_ms": 164.7
+}

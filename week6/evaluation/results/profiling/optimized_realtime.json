@@ -1,0 +1,9 @@
+{
+  "mode": "optimized_realtime_100",
+  "n_steps": 100,
+  "avg_latency_ms": 0.1974268200251572,
+  "p50_latency_ms": 0.00034599997889017686,
+  "p95_latency_ms": 0.0004399998942972161,
+  "p99_latency_ms": 19.70332799987773,
+  "peak_ram_mb": 659.80078125
+}

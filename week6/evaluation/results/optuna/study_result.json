@@ -1,0 +1,16 @@
+{
+  "best_value_mae": 0.1058163852675965,
+  "best_params": {
+    "lr": 0.00011758582466022072,
+    "batch_size": 8,
+    "hidden": 64,
+    "n_heads": 2,
+    "n_layers": 1,
+    "dropout": 0.13729642567443695,
+    "weight_decay": 0.00010924727389282138
+  },
+  "n_trials": 30,
+  "n_pruned": 17,
+  "n_complete": 13,
+  "elapsed_sec": 4466.478701353073
+}

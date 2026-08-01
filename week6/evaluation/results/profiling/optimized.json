@@ -1,0 +1,10 @@
+{
+  "mode": "optimized_fast",
+  "n_steps": 100,
+  "avg_latency_ms": 0.20700859000726268,
+  "p50_latency_ms": 0.00034799995773937553,
+  "p95_latency_ms": 0.0004429998625710141,
+  "p99_latency_ms": 20.661804999917877,
+  "peak_ram_mb": 659.5,
+  "peak_gpu_mb": 0.0
+}

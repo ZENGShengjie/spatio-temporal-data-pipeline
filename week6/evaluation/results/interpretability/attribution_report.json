@@ -1,0 +1,90 @@
+{
+  "total_events": 5485,
+  "holiday_distribution": {
+    "n_holiday": 0,
+    "n_weekend": 1529,
+    "n_workday": 3956,
+    "holiday_ratio": 0.0,
+    "avg_score_holiday": 0.0,
+    "avg_score_workday": 0.9547304847966069,
+    "avg_score_weekend": 0.959294786634127,
+    "level_dist_holiday": {
+      "1": 0,
+      "2": 0,
+      "3": 0
+    },
+    "level_dist_workday": {
+      "1": 0,
+      "2": 0,
+      "3": 0
+    }
+  },
+  "weather_distribution": {
+    "events_per_class": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "unknown": 5485
+    },
+    "days_per_class": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0
+    },
+    "events_per_class_per_day": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0
+    }
+  },
+  "severe_events": {
+    "total": 0,
+    "holiday_ratio": 0.0
+  },
+  "n_holidays_in_test_set": 0,
+  "n_test_days": 25,
+  "typical_cases": [
+    {
+      "event_id": 1169,
+      "t_start": 280,
+      "t_end": 280,
+      "date": "2015-11-12",
+      "is_holiday": false,
+      "is_weekend": false,
+      "weather_class": null,
+      "n_cells": 608,
+      "avg_score": 0.9045728445053101,
+      "warning_level": null
+    },
+    {
+      "event_id": 1136,
+      "t_start": 277,
+      "t_end": 277,
+      "date": "2015-11-12",
+      "is_holiday": false,
+      "is_weekend": false,
+      "weather_class": null,
+      "n_cells": 506,
+      "avg_score": 0.9025015234947205,
+      "warning_level": null
+    },
+    {
+      "event_id": 1131,
+      "t_start": 276,
+      "t_end": 276,
+      "date": "2015-11-12",
+      "is_holiday": false,
+      "is_weekend": false,
+      "weather_class": null,
+      "n_cells": 480,
+      "avg_score": 0.9045345187187195,
+      "warning_level": null
+    }
+  ]
+}

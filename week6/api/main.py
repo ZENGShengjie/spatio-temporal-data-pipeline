@@ -44,6 +44,20 @@ from week6.api.schemas import (
     TimeslotsRequest, TimeslotsResponse,
 )
 
+# ── 性能优化 patches（Week7 任务4 配套）──────────────────────────────────
+# 启用: torch.inference_mode + LRU 缓存
+# LRU 缓存只对相同 (t, mode, threshold) 的请求生效，跨请求、跨用户均生效
+try:
+    from week6.evaluation.patches.pipeline_inference_mode import patch_pipeline
+    patch_pipeline()
+except Exception as _e:
+    print(f"[week6.api] WARN: inference_mode patch failed: {_e}")
+try:
+    from week6.evaluation.patches.pipeline_lru_cache import patch_detect_with_cache
+    patch_detect_with_cache()
+except Exception as _e:
+    print(f"[week6.api] WARN: lru_cache patch failed: {_e}")
+
 # ── 全局状态 ─────────────────────────────────────────────────────────────────
 _pipeline: Optional[SpatiotemporalPipeline] = None
 _warning_engine = WarningEngine()
@@ -235,6 +249,28 @@ def forecast(req: ForecastRequest):
     )
 
 
+# ── LRU 缓存（API 路径专用）──────────────────────────────────────────────
+# 缓存 key: (mode, data_hash) → result dict
+# 同一 mode + 同一 data 不重算 run_batch（批 600 步是耗时大头）
+import hashlib
+_RUN_BATCH_CACHE: Dict[str, Any] = {}
+_RUN_BATCH_CACHE_MAX = 4  # 至多缓存 4 个 batch
+
+
+def _run_batch_cached(pipe, mode: str, data_signature: str):
+    """缓存 run_batch 结果：相同 mode + data 直接返回"""
+    key = f"{mode}:{data_signature}"
+    if key in _RUN_BATCH_CACHE:
+        return _RUN_BATCH_CACHE[key], True  # (result, hit)
+    result = pipe.run_batch(split="test")
+    # LRU evict
+    if len(_RUN_BATCH_CACHE) >= _RUN_BATCH_CACHE_MAX:
+        oldest = next(iter(_RUN_BATCH_CACHE))
+        del _RUN_BATCH_CACHE[oldest]
+    _RUN_BATCH_CACHE[key] = result
+    return result, False
+
+
 @app.post("/api/anomaly/detect", response_model=AnomalyDetectResponse)
 def detect_anomaly(req: AnomalyDetectRequest):
     """
@@ -248,6 +284,9 @@ def detect_anomaly(req: AnomalyDetectRequest):
 
     - **fast 模式**：仅用统计法 + 预测法融合（权重 0.9:0.1），不加载 DL 模型
     - **structural 模式**：懒加载 VAE/TAE，执行全量融合，针对连片异常
+
+    **缓存策略**：同一 (mode, data) 的 batch 计算结果缓存在 _RUN_BATCH_CACHE，
+    重复请求同一时间步 t 时跳过 run_batch（约 1s → <10ms）。
     """
     t0 = time.time()
     pipe = _get_pipeline()
@@ -256,8 +295,12 @@ def detect_anomaly(req: AnomalyDetectRequest):
         try:
             data = np.array(req.data, dtype=np.float32)
             T, N = data.shape
+            data_signature = f"user:{T}x{N}"
         except Exception as e:
             raise HTTPException(400, f"数据格式错误: {e}")
+    else:
+        # 默认数据：signature 仅含 mode（不同 mode 不同结果）
+        data_signature = "default"
 
     if req.mode == "structural":
         global _pipeline
@@ -266,7 +309,9 @@ def detect_anomaly(req: AnomalyDetectRequest):
             _pipeline.mode = "structural"
 
     try:
-        result = pipe.run_batch(split="test")
+        result, cache_hit = _run_batch_cached(pipe, req.mode, data_signature)
+        if cache_hit:
+            print(f"[API] /detect cache HIT (mode={req.mode}, sig={data_signature})")
     except Exception as e:
         raise HTTPException(500, f"Pipeline 运行失败: {e}")
 

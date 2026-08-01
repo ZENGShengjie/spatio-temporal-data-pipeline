@@ -1,0 +1,50 @@
+{
+  "batch_fast": {
+    "mode": "fast",
+    "split": "test",
+    "total_ms": 1778.3103809997556,
+    "throughput_steps_per_sec": 337.3989188898979,
+    "n_steps": 600,
+    "n_anomalies": 26982,
+    "n_events": 5485,
+    "n_alerts": 216
+  },
+  "realtime_fast": {
+    "n_steps": 100,
+    "avg_latency_ms": 15.835251260086807,
+    "p50_latency_ms": 15.666294500078948,
+    "p95_latency_ms": 18.10555404972547,
+    "p99_latency_ms": 18.268902510189964,
+    "peak_ram_mb": 1391.38671875
+  },
+  "realtime_structural": {
+    "error": "'NoneType' object has no attribute 'predict_scores'"
+  },
+  "api_health": {
+    "endpoint": "http://localhost:8000/api/health",
+    "n_requests": 10,
+    "avg_ms": 1045.4079505003392,
+    "p50_ms": 1044.9428140009331,
+    "p95_ms": 1049.4814030007547,
+    "p99_ms": 1051.1860606009577,
+    "success_rate": 1.0
+  },
+  "api_detect": {
+    "endpoint": "http://localhost:8000/api/anomaly/detect",
+    "n_requests": 20,
+    "avg_ms": 937.4879126998167,
+    "p50_ms": 927.3790094994183,
+    "p95_ms": 1030.7053272514167,
+    "p99_ms": 1033.145539051402,
+    "success_rate": 1.0
+  },
+  "api_forecast": {
+    "endpoint": "http://localhost:8000/api/forecast",
+    "n_requests": 10,
+    "avg_ms": 1.9607267000537831,
+    "p50_ms": 1.8997414990735706,
+    "p95_ms": 2.259597650754585,
+    "p99_ms": 2.3835395308378793,
+    "success_rate": 1.0
+  }
+}

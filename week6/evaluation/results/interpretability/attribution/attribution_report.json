@@ -1,0 +1,99 @@
+{
+  "total_events": 5485,
+  "holiday_distribution": {
+    "n_holiday": 876,
+    "n_weekend": 1245,
+    "n_workday": 3364,
+    "holiday_ratio": 0.15970829535095715,
+    "avg_score_holiday": 0.9585797626133923,
+    "avg_score_workday": 0.9574782026047939,
+    "avg_score_weekend": 0.9502031975960635,
+    "level_dist_holiday": {
+      "1": 3,
+      "2": 2,
+      "3": 0
+    },
+    "level_dist_workday": {
+      "1": 80,
+      "2": 28,
+      "3": 0
+    }
+  },
+  "weather_distribution": {
+    "events_per_class": {
+      "sunny": 0,
+      "cloudy_overcast": 2057,
+      "rain_adverse": 190,
+      "foggy": 1484,
+      "snow_adverse": 0,
+      "other_weather": 0,
+      "missing": 1754
+    },
+    "days_per_class": {
+      "sunny": 0,
+      "cloudy_overcast": 9,
+      "rain_adverse": 1,
+      "foggy": 7,
+      "snow_adverse": 0,
+      "other_weather": 0,
+      "missing": 8
+    },
+    "events_per_class_per_day": {
+      "sunny": 0.0,
+      "cloudy_overcast": 228.55555555555554,
+      "rain_adverse": 190.0,
+      "foggy": 212.0,
+      "snow_adverse": 0.0,
+      "other_weather": 0.0,
+      "missing": 219.25
+    }
+  },
+  "severe_events": {
+    "total": 35,
+    "holiday_ratio": 0.05714285714285714
+  },
+  "n_holidays_in_test_set": 4,
+  "n_test_days": 25,
+  "n_days_missing_weather": 8,
+  "typical_cases": [
+    {
+      "event_id": 1169,
+      "t_start": 280,
+      "t_global": 3568,
+      "date": "2016-03-28",
+      "is_holiday": false,
+      "is_weekend": false,
+      "weather_class": 1,
+      "weather_label": "cloudy",
+      "n_cells": 608,
+      "avg_score": 0.9045728445053101,
+      "warning_level": 2
+    },
+    {
+      "event_id": 1136,
+      "t_start": 277,
+      "t_global": 3565,
+      "date": "2016-03-28",
+      "is_holiday": false,
+      "is_weekend": false,
+      "weather_class": 1,
+      "weather_label": "cloudy",
+      "n_cells": 506,
+      "avg_score": 0.9025015234947205,
+      "warning_level": 2
+    },
+    {
+      "event_id": 1131,
+      "t_start": 276,
+      "t_global": 3564,
+      "date": "2016-03-28",
+      "is_holiday": false,
+      "is_weekend": false,
+      "weather_class": 1,
+      "weather_label": "cloudy",
+      "n_cells": 480,
+      "avg_score": 0.9045345187187195,
+      "warning_level": 2
+    }
+  ]
+}

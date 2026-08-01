@@ -32,7 +32,7 @@ from pathlib import Path
 from datetime import datetime
 
 # 路径修复：把仓库根加入 sys.path
-_REPO = Path(__file__).resolve().parents[2]
+_REPO = Path(__file__).resolve().parents[3]  # week6/evaluation/evaluation/ → amazon/
 sys.path.insert(0, str(_REPO))
 
 import numpy as np
@@ -454,8 +454,15 @@ def main():
     data = load_test_split(use_stf_predictions=not args.no_stf_pred,
                            stf_pred_path=args.stf_pred_path)
     print(f"[evaluate] 数据加载 {time.time()-t0:.1f}s:")
-    print(f"  flow={data['flow'].shape}, pred={data['pred_scores'].shape}")
-    print(f"  anomaly_mask={data['anomaly_mask'].sum()}/{data['anomaly_mask'].size}")
+    print(f"  flow type={type(data.get('flow'))}, value_shape={getattr(data.get('flow'), 'shape', None)}")
+    print(f"  pred type={type(data.get('pred_scores'))}, value_shape={getattr(data.get('pred_scores'), 'shape', None)}")
+    am = data.get('anomaly_mask')
+    if am is None:
+        print("  anomaly_mask: (missing)")
+    elif hasattr(am, 'size') and am.size > 1:
+        print(f"  anomaly_mask={int(am.sum())}/{am.size}")
+    else:
+        print(f"  anomaly_mask={am}")
     if data.get("gt_anomaly_labels") is not None:
         gt = data["gt_anomaly_labels"]
         print(f"  gt_anomaly={int(gt.sum())}/{gt.size} ({gt.mean()*100:.2f}%)")

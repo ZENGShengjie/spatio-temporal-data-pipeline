@@ -1,0 +1,18 @@
+{
+  "batch_fast": {
+    "total_ms": 1234.5,
+    "throughput_steps_per_sec": 486.0267314702309,
+    "n_steps": 600,
+    "n_anomalies": 30000,
+    "n_events": 50,
+    "n_alerts": 5
+  },
+  "realtime_fast": {
+    "n_steps": 100,
+    "avg_latency_ms": 9.71590632921668,
+    "p50_latency_ms": 7.850257850458905,
+    "p95_latency_ms": 22.762496215562617,
+    "p99_latency_ms": 27.620765871183334,
+    "peak_ram_mb": 512.0
+  }
+}

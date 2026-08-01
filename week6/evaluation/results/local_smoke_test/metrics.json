@@ -1,0 +1,57 @@
+﻿{
+  "predict": {
+    "overall_mae": 0.03869224712252617,
+    "overall_rmse": 0.04869542270898819,
+    "overall_mape": 23.97247886657715,
+    "flow_mean": 0.25004222989082336,
+    "pred_mean": 0.25121378898620605,
+    "morning_peak_mae": 0.03849063441157341,
+    "morning_peak_rmse": 0.04840916767716408,
+    "morning_peak_count": 72,
+    "off_peak_mae": 0.038704585283994675,
+    "off_peak_rmse": 0.04870699718594551,
+    "off_peak_count": 204,
+    "evening_peak_mae": 0.038719743490219116,
+    "evening_peak_rmse": 0.048725929111242294,
+    "evening_peak_count": 78,
+    "night_mae": 0.038684774190187454,
+    "night_rmse": 0.04870707914233208,
+    "night_count": 270,
+    "core_area_mae": 0.03870594874024391,
+    "core_area_rmse": 0.04870056360960007,
+    "suburban_mae": 0.03868768364191055,
+    "suburban_rmse": 0.0486937090754509,
+    "next_step_direction_acc": 0.8961322255843072
+  },
+  "anomaly": {
+    "overall_anomaly_rate": 0.0504931640625,
+    "day_anomaly_rate": 0.05061297228107345,
+    "night_anomaly_rate": 0.05032075711382114,
+    "day_night_ratio": 1.0058070502912215,
+    "core_anomaly_density": 0.051497395833333334,
+    "suburb_anomaly_density": 0.05015842013888889,
+    "core_suburb_ratio": 1.0266949335871587,
+    "avg_cluster_size": 1.1136363636363635,
+    "max_cluster_size": 2,
+    "high_score_ratio": 0.009949544270833333
+  },
+  "events": {
+    "total_events": 2,
+    "events_per_day": 0.08,
+    "avg_n_cells": 25.0,
+    "max_n_cells": 25,
+    "avg_duration": 3.0,
+    "max_duration": 3,
+    "avg_score": 0.92,
+    "night_event_ratio": 0.0,
+    "level_1_count": 0,
+    "level_2_count": 2,
+    "level_3_count": 0,
+    "type_distribution": {
+      "spatial_sustained": 2
+    }
+  },
+  "n_samples": 614400,
+  "t_steps": 600,
+  "val_end": 3288
+}

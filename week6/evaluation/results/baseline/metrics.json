@@ -1,0 +1,182 @@
+{
+  "predict": {
+    "overall_mae": 597.697998046875,
+    "overall_rmse": 831.75732421875,
+    "overall_mape": 134713.578125,
+    "flow_mean": 0.6707668304443359,
+    "pred_mean": 598.3687744140625,
+    "morning_peak_mae": 625.1539306640625,
+    "morning_peak_rmse": 865.278564453125,
+    "morning_peak_count": 72,
+    "off_peak_mae": 643.0433349609375,
+    "off_peak_rmse": 888.9780883789062,
+    "off_peak_count": 204,
+    "evening_peak_mae": 649.7872924804688,
+    "evening_peak_rmse": 897.9296264648438,
+    "evening_peak_count": 78,
+    "night_mae": 544.408203125,
+    "night_rmse": 759.177001953125,
+    "night_count": 270,
+    "core_area_mae": 910.7657470703125,
+    "core_area_rmse": 1114.828857421875,
+    "suburban_mae": 493.3420715332031,
+    "suburban_rmse": 712.843505859375,
+    "next_step_direction_acc": 0.5039230570259153
+  },
+  "anomaly": {
+    "overall_anomaly_rate": 0.005906575520833333,
+    "day_anomaly_rate": 0.0064166225282485875,
+    "night_anomaly_rate": 0.00517260543699187,
+    "day_night_ratio": 1.2405010601350208,
+    "core_anomaly_density": 0.00841796875,
+    "suburb_anomaly_density": 0.005069444444444444,
+    "core_suburb_ratio": 1.660530821917808,
+    "avg_cluster_size": 3.0,
+    "max_cluster_size": 3,
+    "high_score_ratio": 0.0009098307291666666
+  },
+  "events": {
+    "total_events": 5485,
+    "events_per_day": 219.4,
+    "avg_n_cells": 4.919234275296263,
+    "max_n_cells": 608,
+    "avg_duration": 1.0,
+    "max_duration": 1,
+    "avg_score": 0.9560028307418337,
+    "night_event_ratio": 0.43208751139471285,
+    "level_1_count": 86,
+    "level_2_count": 35,
+    "level_3_count": 0,
+    "type_distribution": {
+      "spatial_sustained": 2504,
+      "point_single": 2981
+    }
+  },
+  "n_samples": 614400,
+  "t_steps": 600,
+  "val_end": 3288,
+  "anomaly_classification": {
+    "precision": 0.956461835216313,
+    "recall": 0.14068579766536965,
+    "f1": 0.24529168580615524,
+    "accuracy": 0.9652360026041666,
+    "TP": 3471,
+    "FP": 158,
+    "FN": 21201,
+    "TN": 589570
+  },
+  "model_tag": "baseline",
+  "timestamp": "2026-07-26T17:43:28",
+  "threshold_sweep": [
+    {
+      "threshold": 0.5,
+      "precision": 0.44516378394047734,
+      "recall": 0.9336494811932555,
+      "f1": 0.602876323331196,
+      "TP": 23035,
+      "FP": 28710,
+      "FN": 1637,
+      "pred_count": 51745
+    },
+    {
+      "threshold": 0.6,
+      "precision": 0.6150806900389538,
+      "recall": 0.8959954604409858,
+      "f1": 0.7294265162014122,
+      "TP": 22106,
+      "FP": 13834,
+      "FN": 2566,
+      "pred_count": 35940
+    },
+    {
+      "threshold": 0.7,
+      "precision": 0.847996228194248,
+      "recall": 0.7290045395590142,
+      "f1": 0.7840111590601979,
+      "TP": 17986,
+      "FP": 3224,
+      "FN": 6686,
+      "pred_count": 21210
+    },
+    {
+      "threshold": 0.75,
+      "precision": 0.8832999210254541,
+      "recall": 0.5893320363164721,
+      "f1": 0.7069749349670581,
+      "TP": 14540,
+      "FP": 1921,
+      "FN": 10132,
+      "pred_count": 16461
+    },
+    {
+      "threshold": 0.8,
+      "precision": 0.9219080123516984,
+      "recall": 0.459833009079118,
+      "f1": 0.6136080912975282,
+      "TP": 11345,
+      "FP": 961,
+      "FN": 13327,
+      "pred_count": 12306
+    },
+    {
+      "threshold": 0.85,
+      "precision": 0.9563261275101503,
+      "recall": 0.3532344357976654,
+      "f1": 0.5159094272606186,
+      "TP": 8715,
+      "FP": 398,
+      "FN": 15957,
+      "pred_count": 9113
+    },
+    {
+      "threshold": 0.88,
+      "precision": 0.9593889716840537,
+      "recall": 0.20873865110246434,
+      "f1": 0.3428761651131824,
+      "TP": 5150,
+      "FP": 218,
+      "FN": 19522,
+      "pred_count": 5368
+    },
+    {
+      "threshold": 0.9,
+      "precision": 0.956461835216313,
+      "recall": 0.14068579766536965,
+      "f1": 0.24529168580615524,
+      "TP": 3471,
+      "FP": 158,
+      "FN": 21201,
+      "pred_count": 3629
+    },
+    {
+      "threshold": 0.92,
+      "precision": 0.9699624530663329,
+      "recall": 0.0942363813229572,
+      "f1": 0.17178322065831764,
+      "TP": 2325,
+      "FP": 72,
+      "FN": 22347,
+      "pred_count": 2397
+    },
+    {
+      "threshold": 0.95,
+      "precision": 1.0,
+      "recall": 0.05151588845654993,
+      "f1": 0.09798404193809505,
+      "TP": 1271,
+      "FP": 0,
+      "FN": 23401,
+      "pred_count": 1271
+    },
+    {
+      "threshold": 0.98,
+      "precision": 1.0,
+      "recall": 0.027926394293125812,
+      "f1": 0.05433539686920863,
+      "TP": 689,
+      "FP": 0,
+      "FN": 23983,
+      "pred_count": 689
+    }
+  ]
+}

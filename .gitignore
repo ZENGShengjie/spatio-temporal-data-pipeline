@@ -6,8 +6,9 @@
 /*.bat
 /*.json
 /*.log
-/2026*/
-/2025*/
+# ── Zoom / meeting recordings (anywhere in repo) ─────────────────────────────────
+"2026-*/
+
 
 
 # ── Local results and intermediate outputs ──────────────────────────────────────

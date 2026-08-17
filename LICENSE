@@ -1,0 +1,37 @@
+Copyright (c) 2026 ZENG Shengjie
+
+本仓库（spatio-temporal-data-pipeline）仅用于学习与研究用途。
+
+在不进行商业使用的前提下，使用者可自由阅读、修改、引用本仓库代码与文档；
+但禁止任何形式的商业用途（包括但不限于商业产品的集成、SaaS 转售、商业培训、
+付费课程等）。
+
+如需商业用途，请事先与作者联系获取书面授权。
+
+学术引用规范：
+
+  @software{zeng2026stpipeline,
+    author    = {ZENG, Shengjie},
+    title     = {Spatio-Temporal Urban Computing Pipeline: Multi-source data fusion, anomaly detection and prediction system},
+    year      = {2026},
+    url       = {https://github.com/ZENGShengjie/spatio-temporal-data-pipeline}
+  }
+
+第三方依赖：本仓库使用了 MIT / BSD / Apache-2.0 协议的第三方库，详见
+各依赖的 LICENSE 文本及 requirements.txt。
+
+---
+
+This repository is for learning and research purposes only.
+
+Unless used for commercial purposes, you are free to read, modify, and cite the
+code and documentation in this repository. However, any form of commercial use
+(including but not limited to commercial product integration, SaaS resale,
+commercial training, paid courses, etc.) is prohibited.
+
+For commercial use, please contact the author for written authorization in
+advance.
+
+Third-party dependencies: This repository uses third-party libraries under MIT /
+BSD / Apache-2.0 licenses. See the LICENSE texts of each dependency and
+requirements.txt for details.

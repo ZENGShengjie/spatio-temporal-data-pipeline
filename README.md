@@ -53,8 +53,31 @@ spatio-temporal-data-pipeline/
 │   ├── results/v4fix/                ← 完整训练日志 + 5 张可视化图
 │   └── weights/                       ← 模型权重
 │
+├── week5/   ── Week 5：异常检测 4 范式 + 多组融合（已完成）
+│   ├── README.md
+│   ├── data/   (注入异常数据 + 标签)
+│   ├── anomaly/   (4 种检测方法 + 融合 V3)
+│   └── report/   (V3 报告 + 结构性消融)
+│
+├── week6/   ── Week 6：API 服务化（已完成）
+│   ├── README.md
+│   ├── api/      (FastAPI 路由 + schemas)
+│   ├── app.py    (Streamlit 主入口)
+│   └── evaluation/   (性能 profiling + 优化)
+│
+├── week7/   ── Week 7：Optuna 调优 + SHAP 可解释性 + 端到端评估（已完成）
+│   ├── README.md
+│   ├── optuna/               (Optuna 搜索结果 + 最优参数重训)
+│   ├── interpretability/     (SHAP + 注意力图)
+│   ├── profiling/            (延迟 / 吞吐量基准)
+│   └── REPORT_TASK*.md       (4 份任务报告)
+│
+├── week8/   ── Week 8：全平台审计（已完成）
+│   └── AUDIT_REPORT.md    (Week 1-7 仓库 + EC2 + GitHub 审计)
+│
 ├── docs/
-│   └── 北京数据质量分析报告.md        ← 完整研究报告（P0 溯源 + Week3/4 实验）
+│   ├── 北京数据质量分析报告.md        ← 完整研究报告（P0 溯源 + Week3/4 实验）
+│   └── EC2_DEPLOYMENT.md             ← EC2 部署与 IP 入口（所有 .md 引用此）
 │
 └── [证据 / 数据文件 / 训练权重  均已加入 .gitignore]
 ```
@@ -104,7 +127,7 @@ spatio-temporal-data-pipeline/
 ## 快速复现
 
 ```bash
-# 登录 EC2（实例 ID 可在 AWS 控制台查看；公网 IP 每次重启可能变）
+# 登录 EC2（详见 `docs/EC2_DEPLOYMENT.md`）
 ssh -i ~/.ssh/aws-spatio-key.pem ubuntu@<EC2_PUBLIC_IP>
 
 # Week3 基线
@@ -135,7 +158,6 @@ python3 _run_ablation_structural.py                      # 消融评估入口
 | ⭐⭐⭐ | [`week4/report/WEEK4_REPORT.md`](week4/report/WEEK4_REPORT.md) | Week4 实验专项报告 |
 | ⭐⭐⭐ | [`week5/docs/ablation_structural_REPORT.md`](week5/docs/ablation_structural_REPORT.md) | **Week5 结构性异常消融实验**（V3 vs surge/drop/sustained）|
 | ⭐⭐⭐ | [`week5/README.md`](week5/README.md) | **Week5 异常检测模块**（4 方法 + 融合框架 + V3 闭环评估）|
-| ⭐⭐⭐ | [`docs/演示视频脚本.md`](docs/演示视频脚本.md) | **演示脚本（API + Streamlit 完整版）** |
 | ⭐⭐ | [`week3/report/WEEK3_REPORT.md`](week3/report/WEEK3_REPORT.md) | Week3 基线实验报告 |
 | ⭐⭐ | [`week4/results/v4fix/WEEK4_FINAL_REPORT.md`](week4/results/v4fix/WEEK4_FINAL_REPORT.md) | Week4 完整训练日志 |
 
@@ -149,7 +171,10 @@ python3 _run_ablation_structural.py                      # 消融评估入口
 - ✅ **Week 4**：时空联合建模（STF/AGFormer/STGCN）+ 消融实验 + 局限性分析
 - ✅ **Week 5**：异常检测 4 范式（statistical / prediction / VAE / Transformer-AE）+ 多组融合 + V3 闭环评估
 - ✅ **Week5 结构性消融**：V3 vs surge/drop/sustained 三种结构性异常对照实验（详见 `week5/docs/ablation_structural_REPORT.md`）
-- ⏳ **Week 6+**：STF 规模化 / 自适应图预热 / 级联架构
+- ✅ **Week 6**：API 服务化（FastAPI 路由 + Streamlit 可视化 + 性能 profiling）
+- ✅ **Week 7**：Optuna 超参调优（MAE −50%）+ SHAP 可解释性 + 端到端评估
+- ✅ **Week 8**：全平台审计（本地 + EC2 + GitHub）+ 报告模板未填项治理
+- ⏳ **后续工作**：STF 规模化 / 自适应图预热 / 级联架构
 
 ---
 
@@ -158,26 +183,6 @@ python3 _run_ablation_structural.py                      # 消融评估入口
 - Python 3.10+
 - 推荐 Linux / WSL / EC2 Ubuntu 22.04（g4dn.xlarge 用于模型训练）
 - 大文件（`.pth`、`.h5`、`.npz`、`.npy`、`.tif`、`.docx`、凭证 `.env`）已加入 `.gitignore`
-
----
-
-## 访问演示界面（Week6）
-
-部署完成后，在浏览器打开：
-
-- **可视化界面**：`http://<EC2_PUBLIC_IP>:8501`（注意 `http://` 双斜杠，侧边栏显示「API 在线 (ok)」即正常）
-- **API 文档 (Swagger)**：`http://<EC2_PUBLIC_IP>:8000/docs`
-
-> ⚠️ **EC2 公网 IP 每次重启可能变化**。建议在 AWS 控制台分配 Elastic IP 固定，否则演示前需查询当前 IP：
-> ```bash
-> ssh ubuntu@<EC2_PUBLIC_IP> 'curl -s ifconfig.me'
-> ```
-> Streamlit 端 `week6/app.py` 第 38 行默认 `http://localhost:8000`，可通过环境变量覆盖：
-> ```bash
-> export API_BASE="http://<EC2_PUBLIC_IP>:8000"
-> streamlit run week6/app.py --server.port 8501
-> ```
-> 详细演示流程见 [`docs/演示视频脚本.md`](docs/演示视频脚本.md)（含 5 个 Tab 完整操作 + curl 命令 + curl 失败/弹窗拦截等应急方案）。
 
 ---
 

@@ -231,7 +231,7 @@ python3 _run_ablation_structural.py                      # 消融评估入口
 | ✅ 深度使用说明 | `docs/USAGE.md` | API / Streamlit / Optuna / SHAP 详细用法 |
 | ✅ 代码整理 | STF/AGFormer/STGCN 完整 docstring + 入口脚本扩写 | 见 `week3/4/5/6/run_*.py` 顶部 |
 | ✅ GitHub 仓库 | [ZENGShengjie/spatio-temporal-data-pipeline](https://github.com/ZENGShengjie/spatio-temporal-data-pipeline) | 已 push 3 个 Week8 commit |
-| ⏳ 演示视频（5 分钟）| 录制指南待定 | 需用户本地录制 |
+| ⏳ 演示视频（5 分钟）| 录制脚本已就绪，待录制 | 见 [`docs/录制指南.md`](docs/录制指南.md) + [`docs/口播稿.md`](docs/口播稿.md) + [`docs/演示视频脚本.md`](docs/演示视频脚本.md) |
 
 ---
 

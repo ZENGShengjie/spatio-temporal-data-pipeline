@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目总结报告 — 多源时空数据融合的城市人流异常检测与预测系统</title>
+
+<!-- Reveal.js 单文件版（来自 jsDelivr CDN） -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/theme/white.min.css">
+<style>
+  :root {
+    --primary: #1a73e8;
+    --accent: #e91e63;
+    --bg-soft: #f6f8fa;
+    --text: #202124;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+                 Helvetica, Arial, sans-serif;
+  }
+  .reveal {
+    font-size: 28px;
+    color: var(--text);
+  }
+  .reveal h1, .reveal h2, .reveal h3 {
+    color: var(--primary);
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: -0.01em;
+  }
+  .reveal h1 { font-size: 2.4em; }
+  .reveal h2 { font-size: 1.7em; }
+  .reveal h3 { font-size: 1.2em; }
+  .reveal section {
+    text-align: left;
+  }
+  .reveal .title-slide h1 {
+    color: var(--primary);
+    font-size: 1.9em;
+  }
+  .reveal .title-slide .subtitle {
+    color: #5f6368;
+    font-size: 0.7em;
+    margin-top: 0.4em;
+  }
+  .reveal .title-slide .author {
+    color: var(--accent);
+    font-size: 0.6em;
+    margin-top: 1.0em;
+  }
+  .reveal section img {
+    border: 0;
+    box-shadow: none;
+    background: none;
+    max-width: 80%;
+    max-height: 70vh;
+  }
+  .reveal table {
+    margin: 0.4em auto;
+    border-collapse: collapse;
+    font-size: 0.6em;
+  }
+  .reveal th {
+    background: var(--primary);
+    color: white;
+    padding: 8px 14px;
+  }
+  .reveal td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .reveal pre {
+    width: 95%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  .reveal pre code {
+    max-height: 480px;
+    padding: 14px 18px;
+    font-size: 0.55em;
+    line-height: 1.4;
+  }
+  .reveal .highlight {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .reveal .number {
+    color: var(--primary);
+    font-weight: 700;
+    font-family: "SF Mono", Consolas, monospace;
+  }
+  .reveal .small { font-size: 0.7em; color: #5f6368; }
+  .reveal .badge {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 0.15em 0.6em;
+    border-radius: 0.4em;
+    font-size: 0.7em;
+    margin: 0 0.2em;
+  }
+  .reveal .badge-accent {
+    background: var(--accent);
+  }
+  .reveal .two-col {
+    display: flex;
+    gap: 1.2em;
+  }
+  .reveal .col {
+    flex: 1;
+  }
+  .reveal .card {
+    background: var(--bg-soft);
+    border-left: 4px solid var(--primary);
+    padding: 12px 16px;
+    margin: 8px 0;
+    border-radius: 4px;
+  }
+  .reveal .card-accent {
+    border-left-color: var(--accent);
+  }
+  .reveal ul li {
+    margin: 0.3em 0;
+  }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============== Slide 1 ============== -->
+<section class="title-slide">
+  <h1>多源时空数据融合的<br>城市人流异常检测与预测系统</h1>
+  <div class="subtitle">项目总结报告 · Week 8 最终交付</div>
+  <div class="author">ZENG Shengjie · 2026-08-17</div>
+  <aside class="notes">开场白：项目从原始数据到端到端系统，历时八周，欢迎批评指正。</aside>
+</section>
+
+<!-- ============== Slide 2 ============== -->
+<section>
+  <h2>项目概述</h2>
+  <div class="two-col">
+    <div class="col">
+      <div class="card">
+        <h3>问题</h3>
+        <p>城市异常事件（活动 / 灾害 / 事故）发生时，<br>需要<span class="highlight">实时检测</span>并<span class="highlight">提前预警</span>。</p>
+      </div>
+      <div class="card">
+        <h3>输入</h3>
+        <p>北京出租车 GPS (30min × 32×32 网格)<br>+ 气象 + POI + OSM 路网</p>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card card-accent">
+        <h3>输出</h3>
+        <p>1024 网格 × 600 时间步异常标签<br>+ 48h 未来流量预测<br>+ 可解释性归因</p>
+      </div>
+      <div class="card">
+        <h3>形态</h3>
+        <p>FastAPI + Streamlit 一键部署</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== Slide 3 ============== -->
+<section>
+  <h2>业务场景</h2>
+  <ul>
+    <li><span class="badge">1</span> <b>大型活动预警</b>：演唱会 / 赛事散场 → 网格流量突增 → 提前 30min 推送</li>
+    <li><span class="badge">2</span> <b>恶劣天气响应</b>：暴雨 / 高温 / 寒潮 → 流量骤降 → 辅助公交调度</li>
+    <li><span class="badge">3</span> <b>交通事故检测</b>：局部流量异常聚集 → 联动 110 / 122</li>
+    <li><span class="badge">4</span> <b>节假日感知</b>：春节 / 清明 → 推断异常类型 + 流量模式</li>
+  </ul>
+  <p class="small">业务方：北京市交通管理 / 大型园区 / 连锁零售 (选址与人流监测)</p>
+</section>
+
+<!-- ============== Slide 4 ============== -->
+<section>
+  <h2>核心数字（一张图速览）</h2>
+  <table>
+    <thead>
+      <tr><th>指标</th><th>基线</th><th>最终</th><th>提升</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>STF 测试 MAE</td><td>597.70</td><td><span class="number">297.55</span></td><td><span class="highlight">-50.2%</span></td></tr>
+      <tr><td>异常检测 F1 (验证)</td><td>0.245</td><td><span class="number">0.7840</span></td><td><span class="highlight">+0.539</span></td></tr>
+      <tr><td>异常检测 F1 (测试)</td><td>—</td><td><span class="number">0.9515</span></td><td><span class="highlight">融合 V3</span></td></tr>
+      <tr><td>API 冷启动</td><td>1276 ms</td><td>1276 ms</td><td>—</td></tr>
+      <tr><td>API 缓存命中</td><td>—</td><td><span class="number">9.8 ms</span></td><td><span class="highlight">130×</span></td></tr>
+      <tr><td>STF 参数量</td><td>—</td><td><span class="number">222K</span></td><td>AGFormer 的 1/10</td></tr>
+    </tbody>
+  </table>
+  <p class="small">所有数字均经过 2026-08-01 重跑 + 实测验证</p>
+</section>
+
+<!-- ============== Slide 5 ============== -->
+<section>
+  <h2>五大技术亮点</h2>
+  <ol>
+    <li><span class="highlight">时空分解 Transformer (STF)</span>：222K 参数取得最优，Corr = 0.8043</li>
+    <li><span class="highlight">多范式融合异常检测</span>：统计 + 预测 + 重构三路互补，F1 = 0.9515</li>
+    <li><span class="highlight">完整数据治理</span>：P0 bit-for-bit 校验 + 缺失溯源 + 注入修复</li>
+    <li><span class="highlight">端到端服务化</span>：FastAPI + Streamlit，缓存 130× 加速</li>
+    <li><span class="highlight">可解释性</span>：SHAP + 注意力图 + 异常归因全链路</li>
+  </ol>
+</section>
+
+<!-- ============== Slide 6 ============== -->
+<section>
+  <h2>系统架构</h2>
+  <pre><code class="mermaid">
+   ┌────────────────────────────────────────────────┐
+   │  用户层       Streamlit 可视化 / API 用户        │
+   └─────────────────────┬──────────────────────────┘
+                         │
+   ┌─────────────────────▼──────────────────────────┐
+   │  服务层       FastAPI 8500   +  LRU Cache       │
+   │               Streamlit 8501                   │
+   └─────────────────────┬──────────────────────────┘
+                         │
+   ┌─────────────────────▼──────────────────────────┐
+   │  融合层       4 路检测 + 网格搜索最优权重         │
+   │               (stat | pred | vae | tae)         │
+   └─────────────────────┬──────────────────────────┘
+                         │
+   ┌───────────┬─────────┴────────┬───────────────┐
+   │ 模型层    │   STF (时空)       │  7 时序基线     │
+   │           │   AGFormer         │  (Week3)       │
+   │           │   STGCN (Week4)    │                │
+   └───────────┴─────────┬────────┴───────────────┘
+                         │
+   ┌─────────────────────▼──────────────────────────┐
+   │  数据层       Raw H5 → 30min×32×32 网格流量     │
+   │               + 气象 ERA5 + POI + OSM            │
+   └────────────────────────────────────────────────┘
+  </code></pre>
+</section>
+
+<!-- ============== Slide 7 ============== -->
+<section>
+  <h2>技术难点（4 大坑 + 解法）</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>问题</th><th>影响</th><th>解法</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>异常注入失真 (0.03% &lt; 4%)</td>
+        <td>F1 &lt; 0.1，所有模型失效</td>
+        <td>按比例反向计算 + 强制校验</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>STF 权重加载失败（路径漂移）</td>
+        <td>预测法退化为恒零</td>
+        <td>重写推理链路 + ckpt 结构兼容</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>融合权重搜索空间爆炸 O(n⁴)</td>
+        <td>训练成本不可承受</td>
+        <td>分阶段：先搜阈值再搜权重 → O(n²)</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>小数据集下大模型过拟合</td>
+        <td>AGFormer MAE 比 STF 高 18%</td>
+        <td>时空分解 + 环境 token → 222K</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============== Slide 8 ============== -->
+<section>
+  <h2>数据流水线</h2>
+  <pre><code class="mermaid">
+  原始数据                          清洗后
+  ──────                          ──────
+  TaxiBJ P4        ──┐
+                      │
+  气象 (OpenWeather)├─►  ETL  ──►  32×32 网格流量 (val=504 / test=600)
+                      │           + 假期 / 天气编码
+  POI (GeoNames)    ─┤            + 邻接矩阵 (8-N)
+                      │
+  OSM (路网)        ─┘
+  </code></pre>
+  <p><span class="highlight">P0 校验</span>：3,603/3,603 完整小时 bit-for-bit 等于 raw H5<br>
+  <span class="highlight">缺失处理</span>：271 缺失小时 100% 来自同 DoW 真实 hour</p>
+</section>
+
+<!-- ============== Slide 9 ============== -->
+<section>
+  <h2>多源数据规模</h2>
+  <table>
+    <thead>
+      <tr><th>数据源</th><th>时间</th><th>空间</th><th>大小</th><th>备注</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>出租车流量 P4</td><td>2015-11 → 2016-04</td><td>32×32</td><td>113 MB</td><td>7220 30-min 步</td></tr>
+      <tr><td>气象 ERA5</td><td>同期</td><td>城市级</td><td>109 KB</td><td>7 变量, 3888 步</td></tr>
+      <tr><td>POI</td><td>2015-11 时点</td><td>32×32</td><td>41 KB</td><td>10 类, 8217 POI</td></tr>
+      <tr><td>OSM</td><td>—</td><td>20 文件</td><td>139 MB</td><td>POI + 路网 + 建筑</td></tr>
+      <tr><td>节假日</td><td>2015-2016</td><td>—</td><td>1.1 KB</td><td>P4 含 13 条</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============== Slide 10 ============== -->
+<section>
+  <h2>时序基线（Week3 · 7 模型）</h2>
+  <table>
+    <thead>
+      <tr><th>模型</th><th>MAE ↓</th><th>MAPE ↓</th><th>Corr ↑</th><th>训练时间</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>🥇 Prophet (1-shot)</td><td><b>93.66</b></td><td>—</td><td>0.9283</td><td>300s</td></tr>
+      <tr><td>🥈 GRU</td><td><b>158.12</b></td><td>42.83</td><td><b>0.9452</b></td><td>54s</td></tr>
+      <tr><td>LSTM</td><td>162.35</td><td>44.1</td><td>0.9405</td><td>78s</td></tr>
+      <tr><td>ARIMA</td><td>185.4</td><td>—</td><td>0.9012</td><td>—</td></tr>
+      <tr><td>GCN / GAT</td><td>&gt; 300</td><td>—</td><td>&lt; 0.7</td><td>用于逐网格预测</td></tr>
+    </tbody>
+  </table>
+  <p class="small">GRU 因门控简化 + 双向信息流，成为城市级聚合最优基线（54 秒训练出 sota）。</p>
+</section>
+
+<!-- ============== Slide 11 ============== -->
+<section>
+  <h2>STF 模型架构（创新点）</h2>
+  <pre><code class="mermaid">
+   输入 X (B, T, N, F)
+       │
+       ▼
+   ┌─────────────────┐
+   │ Temporal Encoder│  ←  时间维度自注意力
+   │ (Transformer)   │
+   └────────┬────────┘
+            ▼
+   ┌─────────────────┐
+   │  Env Token (G)  │  ←  全局上下文（节假日、天气）
+   └────────┬────────┘
+            ▼
+   ┌─────────────────┐
+   │ Spatial Decoder │  ←  跨节点注意力
+   │  (Cross-Attn)   │
+   └────────┬────────┘
+            ▼
+   输出 Y (B, T_pred, N, F)
+  </code></pre>
+  <p class="small">
+    <span class="highlight">核心思想</span>：把时空联合建模<span class="highlight">分解</span>为时间和空间两部分独立处理，通过<span class="highlight">环境 token</span>编码全局信息。
+  </p>
+  <p class="small">
+    <span class="badge">参数量</span> <span class="number">222K</span>
+    <span class="badge">对比 AGFormer</span> <span class="number">2.26M (10×)</span>
+    <span class="badge">Corr</span> <span class="number">0.8043 (sota)</span>
+  </p>
+</section>
+
+<!-- ============== Slide 12 ============== -->
+<section>
+  <h2>时空联合模型对比（Week4）</h2>
+  <table>
+    <thead>
+      <tr><th>排名</th><th>模型</th><th>MAE ↓</th><th>Corr ↑</th><th>参数量</th><th>训练耗时</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>🥇</td><td><b>STF</b></td><td><b>327.19</b></td><td><b>0.8043</b></td><td><b>222K</b></td><td>515s</td></tr>
+      <tr><td>🥈</td><td>AGFormer</td><td>386.91</td><td>0.6990</td><td>2,264K</td><td>9,491s</td></tr>
+      <tr><td>🥉</td><td>STGCN</td><td>429.18</td><td>0.6502</td><td>200K</td><td>9,695s</td></tr>
+    </tbody>
+  </table>
+  <p class="highlight">小结</p>
+  <ul>
+    <li>STF 在 <b>1 个 epoch</b> 后即收敛（时空分解快速收敛）</li>
+    <li>AGFormer 训练 <b>29 epoch</b> 才到最优，且 MAE 比 STF 高 18%</li>
+    <li>消融：移除 Env Token + 跨节点注意力 → MAE +2.2%</li>
+  </ul>
+</section>
+
+<!-- ============== Slide 13 ============== -->
+<section>
+  <h2>Optuna 超参优化（Week7）</h2>
+  <table>
+    <thead>
+      <tr><th>超参</th><th>默认</th><th><span class="highlight">最优 (Trial #12)</span></th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Hidden dim</td><td>128</td><td><span class="number">64</span></td></tr>
+      <tr><td>Encoder layer</td><td>2</td><td><span class="number">1</span></td></tr>
+      <tr><td>Attention head</td><td>4</td><td><span class="number">2</span></td></tr>
+      <tr><td>Learning rate</td><td>1e-3</td><td><span class="number">1.176e-4</span></td></tr>
+      <tr><td>Dropout</td><td>0.1</td><td><span class="number">0.137</span></td></tr>
+    </tbody>
+  </table>
+  <p>
+    <span class="badge">测试 MAE</span> <span class="number">597 → 297</span>
+    <span class="badge">-50.2%</span>
+  </p>
+  <p class="small">关键发现：小数据集下模型应"小型化"——避免过拟合。</p>
+</section>
+
+<!-- ============== Slide 14 ============== -->
+<section>
+  <h2>四范式异常检测</h2>
+  <table>
+    <thead>
+      <tr><th>范式</th><th>原理</th><th>优点</th><th>局限</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="badge">统计阈值</span></td><td>3σ + IQR 分时段</td><td>无需训练、可解释</td><td>难捕获复杂模式</td></tr>
+      <tr><td><span class="badge">预测误差</span></td><td>STF 预测残差</td><td>捕获非线性偏离</td><td>依赖模型精度</td></tr>
+      <tr><td><span class="badge">VAE</span></td><td>单网格重构</td><td>学习流形结构</td><td>GAN-style 训练不稳</td></tr>
+      <tr><td><span class="badge">Transformer AE</span></td><td>多网格掩码重构</td><td>捕获双向上下文</td><td>需更多数据</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============== Slide 15 ============== -->
+<section>
+  <h2>融合权重搜索（验证集网格）</h2>
+  <pre><code class="mermaid">
+             ┌──────────────┐
+   统计  ───►│              │
+             │  加权融合     │──── ► F1_max
+   预测  ───►│  w·normalize │
+             │  + 阈值搜索   │      验证: 0.7840
+   VAE   ───►│              │      测试: 0.9515
+             └──────────────┘
+  </code></pre>
+  <p>
+    <span class="badge">最优权重</span> <span class="number">(0.5, 0.5, 0, 0)</span>
+    <span class="badge">最优阈值</span> <span class="number">0.540</span>
+  </p>
+  <p class="small">找到的关键：当前数据下<b>两路融合</b>已足够（VAE/TAE 反而引入噪声）。</p>
+</section>
+
+<!-- ============== Slide 16 ============== -->
+<section>
+  <h2>异常检测最终结果</h2>
+  <table>
+    <thead>
+      <tr><th>方法</th><th>Precision</th><th>Recall</th><th>F1</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>默认阈值 0.90 (V1)</td><td>0.83</td><td>0.14</td><td>0.245</td></tr>
+      <tr><td>单路统计 (V2)</td><td>0.78</td><td>0.81</td><td>0.7929</td></tr>
+      <tr><td>单路预测 (V3 fix)</td><td>0.71</td><td>0.83</td><td>0.7687</td></tr>
+      <tr style="background: #fce4ec"><td><b>融合 V3 (Final)</b></td><td><b>0.95</b></td><td><b>0.95</b></td><td><b class="number">0.9515</b></td></tr>
+    </tbody>
+  </table>
+  <p class="highlight">融合提升 1+1&gt;2</p>
+  <p class="small">统计法擅长捕获与历史显著偏离；预测法擅长捕获与模型预期不符。<br>两者互补，召回率与精度同步提升。</p>
+</section>
+
+<!-- ============== Slide 17 ============== -->
+<section>
+  <h2>可解释性分析</h2>
+  <div class="two-col">
+    <div class="col">
+      <h3>SHAP Top 特征</h3>
+      <ul>
+        <li><b>target_grid_in</b>: 0.0196 历史同期</li>
+        <li><b>hour</b>: 日内周期</li>
+        <li><b>day_of_week</b>: 周周期</li>
+        <li><b>POI 密度</b>: 功能区划</li>
+        <li><b>温度</b>: 极端天气</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>注意力头分工</h3>
+      <ul>
+        <li><b>H0</b>: 局部邻居 (低方差)</li>
+        <li><b>H1</b>: 长程依赖 (方差高 2.4×)</li>
+        <li><b>早高峰</b>: 关注前一天同时段</li>
+      </ul>
+    </div>
+  </div>
+  <p class="small">异常归因：节假日 73% / 气象 18% / 事件 9%（基于 1002 个测试集异常事件统计）</p>
+</section>
+
+<!-- ============== Slide 18 ============== -->
+<section>
+  <h2>API 性能 + 系统演示</h2>
+  <table>
+    <thead>
+      <tr><th>场景</th><th>延迟</th><th>提升</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>冷启动 (首次加载模型)</td><td>1276 ms</td><td>—</td></tr>
+      <tr><td>缓存命中 (相同窗口)</td><td><span class="number">9.8 ms</span></td><td><span class="highlight">130×</span></td></tr>
+      <tr><td>批量 (600 步)</td><td>1.78 s</td><td>337 步/s</td></tr>
+      <tr><td>实时 (1 步滚动)</td><td>15.8 ms (p95=18)</td><td>实时预警可行</td></tr>
+    </tbody>
+  </table>
+  <p>
+    <span class="badge">FastAPI</span> <span class="badge">Streamlit</span>
+    <span class="badge">orjson</span>
+    <span class="badge">LRU 1k</span>
+    <span class="badge">inference_mode</span>
+  </p>
+</section>
+
+<!-- ============== Slide 19 ============== -->
+<section>
+  <h2>项目交付清单</h2>
+  <table>
+    <thead>
+      <tr><th>交付物</th><th>位置</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>✅ 多源时空数据采集（Week1）</td><td>week1/scripts/</td></tr>
+      <tr><td>✅ 数据清洗与特征工程（Week2）</td><td>week2/scripts/ + docs/北京数据质量分析报告.md</td></tr>
+      <tr><td>✅ 7 时序基线（Week3）</td><td>week3/models/ + week3/report/</td></tr>
+      <tr><td>✅ 3 时空联合模型（Week4）</td><td>week4/models/ + week4/report/WEEK4_REPORT.md</td></tr>
+      <tr><td>✅ 四范式异常检测融合（Week5）</td><td>week5/anomaly/ + week5/report/</td></tr>
+      <tr><td>✅ FastAPI + Streamlit（Week6）</td><td>week6/api/ + week6/app.py</td></tr>
+      <tr><td>✅ Optuna + SHAP + 性能（Week7）</td><td>week7/REPORT_TASK{1..4}_*.md</td></tr>
+      <tr><td>✅ 完整技术报告（Week8）</td><td>docs/技术报告.md (10K+ 字)</td></tr>
+      <tr><td>✅ GitHub 仓库</td><td>ZENGShengjie/spatio-temporal-data-pipeline</td></tr>
+      <tr><td>✅ 演示视频</td><td>docs/演示视频脚本.md / 录制产物</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============== Slide 20 ============== -->
+<section>
+  <h2>总结与未来方向</h2>
+  <div class="two-col">
+    <div class="col">
+      <h3>核心成果</h3>
+      <ul>
+        <li>10 模型系统评估</li>
+        <li>4 范式异常检测融合</li>
+        <li>F1 = <span class="number">0.9515</span></li>
+        <li>API <span class="number">9.8 ms</span></li>
+        <li>完整文档与可复现</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>未来方向</h3>
+      <ul>
+        <li>多城市预训练 + 微调</li>
+        <li>自适应网格划分</li>
+        <li>周期性/渐变异常</li>
+        <li>端到端联合优化</li>
+        <li>流式在线学习</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============== Slide 21 ============== -->
+<section class="title-slide">
+  <h2>感谢聆听</h2>
+  <div class="subtitle">Q &amp; A · 欢迎讨论与建议</div>
+  <div class="author" style="margin-top:2em">
+    GitHub: ZENGShengjie/spatio-temporal-data-pipeline<br>
+    邮箱 / 微信：见报告附页
+  </div>
+</section>
+
+</div><!-- /.slides -->
+</div><!-- /.reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    transition: 'slide',
+    transitionSpeed: 'fast',
+    controls: true,
+    progress: true,
+    slideNumber: 'c/t',
+    pdfSeparateFragments: false,
+  });
+</script>
+</body>
+</html>

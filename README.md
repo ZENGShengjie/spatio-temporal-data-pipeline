@@ -6,6 +6,40 @@
 
 ---
 
+## 📚 文档导航
+
+| 文档 | 用途 |
+|------|------|
+| **[`docs/QUICKSTART.md`](docs/QUICKSTART.md)** | 5 分钟快速起跑（数据 + 训练 + 评估） |
+| **[`docs/USAGE.md`](docs/USAGE.md)** | 深度使用说明（API/Streamlit/Optuna/SHAP） |
+| **[`docs/技术报告.md`](docs/技术报告.md)** | 完整项目技术报告（10K+ 字） |
+| **[`docs/ppt.html`](docs/ppt.html)** | 答辩演示 PPT（浏览器打开） |
+| **[`docs/北京数据质量分析报告.md`](docs/北京数据质量分析报告.md)** | 数据治理专项报告 |
+| **[`docs/EC2_DEPLOYMENT.md`](docs/EC2_DEPLOYMENT.md)** | EC2 部署与 IP 入口 |
+
+---
+
+## 🚀 30 秒上手
+
+```bash
+# 1. 装依赖
+pip install -r requirements.txt
+
+# 2. 跑时序基线（30 秒）
+cd week3 && python3 run_week3.py --models gru --target taxi_flow_total --tag demo
+
+# 3. 跑时空模型（5-10 分钟）
+cd ../week4 && python3 run_week4.py --models stf --target taxi_flow_total --tag demo
+
+# 4. 跑异常检测融合（3-5 分钟）
+cd ../week5 && python3 run_v3_full_eval.py
+
+# 5. 启动 API（可选）
+cd ../week6 && python3 -m uvicorn api.main:app --port 8000
+```
+
+详细步骤见 [`docs/QUICKSTART.md`](docs/QUICKSTART.md)。
+
 ## 仓库结构（按周组织）
 
 ```
@@ -183,6 +217,21 @@ python3 _run_ablation_structural.py                      # 消融评估入口
 - Python 3.10+
 - 推荐 Linux / WSL / EC2 Ubuntu 22.04（g4dn.xlarge 用于模型训练）
 - 大文件（`.pth`、`.h5`、`.npz`、`.npy`、`.tif`、`.docx`、凭证 `.env`）已加入 `.gitignore`
+
+---
+
+## Week 8 交付物（最终）
+
+| 交付物 | 文件 | 说明 |
+|--------|------|------|
+| ✅ 项目技术报告（10K+ 字）| `docs/技术报告.md` | 背景 / 需求 / 技术路线 / 数据 / 模型 / 系统 / 实验 / 可解释性 / 总结展望 |
+| ✅ 项目总结 PPT（21 张）| `docs/ppt.html` | Reveal.js 单文件，浏览器直接打开 |
+| ✅ PPT 使用说明 | `docs/ppt使用说明.md` | 快捷键 / 离线降级 / 转 .pptx |
+| ✅ 快速开始指南 | `docs/QUICKSTART.md` | 5 分钟从零到跑通 |
+| ✅ 深度使用说明 | `docs/USAGE.md` | API / Streamlit / Optuna / SHAP 详细用法 |
+| ✅ 代码整理 | STF/AGFormer/STGCN 完整 docstring + 入口脚本扩写 | 见 `week3/4/5/6/run_*.py` 顶部 |
+| ✅ GitHub 仓库 | [ZENGShengjie/spatio-temporal-data-pipeline](https://github.com/ZENGShengjie/spatio-temporal-data-pipeline) | 已 push 3 个 Week8 commit |
+| ⏳ 演示视频（5 分钟）| 录制指南待定 | 需用户本地录制 |
 
 ---
 

@@ -1,6 +1,37 @@
 """
 run_v3_full_eval.py — Week5 V3 Full Evaluation
-All methods + all fusion variants, no re-training, no data leakage.
+
+本脚本对 V3 异常检测融合框架进行完整评估，包括：
+  1. 单方法评估（统计阈值 / 预测误差 / VAE / Transformer-AE）
+  2. 双路融合（stat + pred / stat + vae / stat + tae / pred + vae / pred + tae / vae + tae）
+  3. 三路融合（stat + pred + vae / stat + pred + tae / stat + vae + tae / pred + vae + tae）
+  4. 四路融合（stat + pred + vae + tae）
+  5. 阈值扫描（0.5 ~ 0.98，自动选 F1 最优）
+  6. 测试集最终评估（验证集搜索的权重与阈值）
+
+数据合规：
+  - 验证集仅用于融合权重搜索与阈值确定
+  - 测试集严格不参与任何调参
+
+用法：
+    cd week5
+    python3 run_v3_full_eval.py
+
+输入：
+    - data/anomaly_labels_val.npy   (504, 1024)  bool
+    - data/anomaly_labels_test.npy  (600, 1024)  bool
+    - cache/stat_scores_val.npy / test.npy
+    - cache/pred_scores_val.npy / test.npy
+    - cache/vae_scores_val.npy / test.npy
+    - cache/tae_scores_val.npy / test.npy
+
+输出：
+    - report/v3_full_eval_<timestamp>.json   (所有配置 + 指标)
+    - report/v3_final_report.md              (人类可读报告)
+
+性能预期：
+    - 全部评估在 5-10 分钟内完成（无需 GPU）
+    - F1@0.5 ~ 0.95（融合 V3 通常 > 0.95）
 """
 import os, sys, json
 from datetime import datetime

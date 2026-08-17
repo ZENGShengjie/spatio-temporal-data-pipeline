@@ -2,6 +2,8 @@
 
 > Week7 全部交付物的单一入口。从 week6/evaluation/results/ 拆出来独立成 week7/。
 
+> **开发过程临时脚本**：本目录（含 `week7/optuna/`、`week7/interpretability/`、`week7/profiling/` 等）下若有 `_*.py` / `_*.sh` 前缀的脚本，多为开发过程的临时调试产物，**不在主入口复现流程内**。答辩使用主入口文件即可，临时脚本仅为过程证据保留。
+
 ## 目录结构
 
 ```

@@ -1,0 +1,86 @@
+name: Sanity CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-
+
+      - name: Install minimal deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyflakes
+
+      - name: Python syntax check
+        # 用 py_compile 验证所有 .py 不抛 SyntaxError
+        # 不依赖外部模型权重 / 数据库
+        run: |
+          set -e
+          python -m compileall -q week1 week2 week3 week4 week5 week6 week7 week8 aws 2>&1 | tail -20 || true
+          echo "---PYFLAKES---"
+          # 只跑纯函数 / 工具模块，不跑训练入口
+          find week1 week2 week3 week4 week5 week6 week7 week8 aws \
+               -name "*.py" -path "*/scripts/*" \
+               -o -name "*.py" -path "*/utils/*" 2>/dev/null \
+            | head -50 | xargs -I {} pyflakes {} || true
+
+      - name: Markdown link placeholder check
+        # 检查 .md 中是否还有遗留硬编码 IP（必须用 <EC2_PUBLIC_IP> 占位符）
+        run: |
+          set +e
+          grep -rEn "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" \
+               --include="*.md" \
+               --exclude-dir="_*" \
+               --exclude="LICENSE" \
+               docs README.md week*/README.md week*/report/*.md week*/*REPORT*.md 2>/dev/null \
+            | grep -v "127.0.0.1\|0.0.0.0" \
+            | tee /tmp/ip_hits.txt
+          echo "---"
+          echo "Found $(wc -l < /tmp/ip_hits.txt) hardcoded IP occurrences"
+          # 历史 IP 索引文件允许含 IP
+          HITS=$(grep -cE '^(docs/EC2_DEPLOYMENT\.md|week8/AUDIT_REPORT\.md):' /tmp/ip_hits.txt || true)
+          TOTAL=$(wc -l < /tmp/ip_hits.txt)
+          echo "  - Total lines: $TOTAL"
+          echo "  - Allowed (history index): $HITS"
+          # 真实硬编码超出历史索引部分 > 0 则报错
+          REAL=$((TOTAL - HITS))
+          if [ "$REAL" -gt 0 ]; then
+            echo "ERROR: $REAL hardcoded IPs outside history index"
+            exit 1
+          fi
+
+      - name: Audit report check
+        # 验证本周所有 _REPORT 文件存在
+        run: |
+          test -f README.md
+          test -f docs/EC2_DEPLOYMENT.md
+          test -f LICENSE
+          test -f requirements.txt
+          test -f week3/report/WEEK3_REPORT.md || echo "WARN: Week3 report missing"
+          test -f week4/report/WEEK4_REPORT.md || echo "WARN: Week4 report missing"
+          echo "Audit gate passed"

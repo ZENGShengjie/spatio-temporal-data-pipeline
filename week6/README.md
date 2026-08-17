@@ -2,6 +2,8 @@
 
 **Spatio-Temporal Urban Flow Anomaly Detection System**
 
+> **开发过程临时脚本**：本目录（`week6/` 下含 `api/`、`evaluation/`、`_patches/` 等）若有 `_*.py` 前缀脚本，多为开发过程临时调试产物（路径补丁、单次推断等），**不在主入口复现流程内**。答辩使用主入口 FastAPI + Streamlit 即可。
+
 基于北京出租车 GPS 数据，融合统计检测 + 预测残差 + 深度学习 (TransAE / VAE / Transformer-AE) 的城市级人流异常检测全栈系统。
 
 [![Python](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/)

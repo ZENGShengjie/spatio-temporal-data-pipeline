@@ -1,49 +1,3 @@
-# ── Temporary / debug / one-off scripts at repo root ───────────────────────────
-# (only top-level - intentional scripts inside week6/ etc still tracked)
-/*.py
-/*.sh
-/*.ps1
-/*.bat
-/*.json
-/*.log
-# ── Zoom / meeting recordings (anywhere in repo) ─────────────────────────────────
-"2026-*/
-
-
-
-# ── Local results and intermediate outputs ──────────────────────────────────────
-week3/results_v2/
-week4/results_v4/
-week5/results_v2/
-week5/week5_results/
-week5_results/
-results/
-evidence/
-evidence/
-repo_check/
-repo_move/
-aws/
-docs/*.png
-docs/*.pdf
-
-# ── TaxiBJ local data ───────────────────────────────────────────────────────────
-taxi_local/
-
-# ── Recordings (anywhere in repo) ─────────────────────────────────────────────
-"week6/2026-08-01*/"
-
-# ── Week1/Week2 (old experiment dirs) ─────────────────────────────────────────
-"week 1"/
-"week 2"/
-week1/
-week2/
-week3_explore.py
-
-# Data directories (large files, not tracked)
-data/
-weights/
-week6/weights/
-
 # Python
 __pycache__/
 *.py[cod]
@@ -100,3 +54,19 @@ week5/cache/*.npz
 streamlit.log
 tile_cache/
 *.png  # skip auto-generated figures
+
+# Data directories (large files, not tracked)
+data/
+weights/
+week6/weights/
+
+# P2 cleanup: archived debug workspace (kept as zip in _archive/)
+_w4push/
+
+# 归档目录 — 任何 _archive/ 下的 zip / tar.gz 仅本地保留
+#（避免未来调试脚本误传 git）
+_archive/
+
+# Zoom 录制文件
+*.zoom/
+"?2026-*/"

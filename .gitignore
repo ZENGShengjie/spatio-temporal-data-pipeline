@@ -70,3 +70,19 @@ _archive/
 # Zoom 录制文件
 *.zoom/
 "?2026-*/"
+
+# PPT/历史调试备份，不入版本库
+*.bak
+*.bak?
+*.bak*
+~$*
+
+# Week 调试/补丁脚本 (以下划线开头的临时调试脚本)
+*_fix_*.py
+*_verify_*.py
+*_scan_*.py
+*_gen_*.py
+*_dump_*.py
+*_pptx_text_dump.md
+*_push_*.ps1
+*_push_*.sh

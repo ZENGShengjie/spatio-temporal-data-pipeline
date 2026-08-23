@@ -106,8 +106,17 @@ spatio-temporal-data-pipeline/
 │   ├── profiling/            (延迟 / 吞吐量基准)
 │   └── REPORT_TASK*.md       (4 份任务报告)
 │
-├── week8/   ── Week 8：全平台审计（已完成）
-│   └── AUDIT_REPORT.md    (Week 1-7 仓库 + EC2 + GitHub 审计)
+├── week8/   ── Week 8：全平台审计 + 最终交付物（已完成）
+│   ├── README.md                                ← week8/ 目录索引（交付物 + 审计）
+│   ├── 城市人流异常检测与预测系统.pptx           ← 最终 PPT（.pptx 版，21 张）
+│   ├── 8月23日/                                  ← 演示视频（mp4 + 截图）
+│   ├── AUDIT_REPORT.md                          ← Week 1-7 全平台审计
+│   ├── BRANCH_MERGE_CHECK.md
+│   ├── PARAM_COUNT_FIX.md
+│   ├── QUICKSTART.md / USAGE.md
+│   ├── ppt.html                                 ← PPT HTML 版
+│   ├── ppt使用说明.md / 口播稿.md / 录制指南.md / 技术报告.md
+│   └── _W4PUSH_CLEANUP_LOG.md
 │
 ├── docs/
 │   ├── 北京数据质量分析报告.md        ← 完整研究报告（P0 溯源 + Week3/4 实验）
@@ -207,7 +216,7 @@ python3 _run_ablation_structural.py                      # 消融评估入口
 - ✅ **Week5 结构性消融**：V3 vs surge/drop/sustained 三种结构性异常对照实验（详见 `week5/docs/ablation_structural_REPORT.md`）
 - ✅ **Week 6**：API 服务化（FastAPI 路由 + Streamlit 可视化 + 性能 profiling）
 - ✅ **Week 7**：Optuna 超参调优（MAE −50%）+ SHAP 可解释性 + 端到端评估
-- ✅ **Week 8**：全平台审计（本地 + EC2 + GitHub）+ 报告模板未填项治理
+- ✅ **Week 8**：全平台审计（本地 + EC2 + GitHub）+ 报告模板未填项治理 + 最终 PPT 校订（自研→采用 STF，归功诚实化） + 演示视频录制完成
 - ⏳ **后续工作**：STF 规模化 / 自适应图预热 / 级联架构
 
 ---
@@ -225,13 +234,17 @@ python3 _run_ablation_structural.py                      # 消融评估入口
 | 交付物 | 文件 | 说明 |
 |--------|------|------|
 | ✅ 项目技术报告（10K+ 字）| `docs/技术报告.md` | 背景 / 需求 / 技术路线 / 数据 / 模型 / 系统 / 实验 / 可解释性 / 总结展望 |
-| ✅ 项目总结 PPT（21 张）| `docs/ppt.html` | Reveal.js 单文件，浏览器直接打开 |
+| ✅ 项目总结 PPT（21 张，HTML 版）| `docs/ppt.html` | Reveal.js 单文件，浏览器直接打开 |
+| ✅ 项目总结 PPT（.pptx 版）| `week8/城市人流异常检测与预测系统.pptx` | 最终版，含"采用 STF（arXiv:2401.12522）时空 Transformer 架构"等归功诚实表述 |
 | ✅ PPT 使用说明 | `docs/ppt使用说明.md` | 快捷键 / 离线降级 / 转 .pptx |
+| ✅ 演示视频（5 分钟）| `week8/8月23日/8月23日.mp4` | 端到端操作录屏（含截图 `week8/8月23日/8月23日-截图.jpg`）|
+| ✅ 项目总结报告 PDF | `机器学习算法地理信息方向：...系统(1).pdf` | 论文版总结 |
 | ✅ 快速开始指南 | `docs/QUICKSTART.md` | 5 分钟从零到跑通 |
 | ✅ 深度使用说明 | `docs/USAGE.md` | API / Streamlit / Optuna / SHAP 详细用法 |
+| ✅ Week 8 配套交付 | `week8/README.md` | week8/ 目录索引（PPT / 报告 / 录屏脚本 / 审计）|
+| ✅ 录制脚本 | `docs/录制指南.md` / `docs/口播稿.md` / `docs/演示视频脚本.md` | 录屏所需的全套脚本 |
 | ✅ 代码整理 | STF/AGFormer/STGCN 完整 docstring + 入口脚本扩写 | 见 `week3/4/5/6/run_*.py` 顶部 |
-| ✅ GitHub 仓库 | [ZENGShengjie/spatio-temporal-data-pipeline](https://github.com/ZENGShengjie/spatio-temporal-data-pipeline) | 已 push 3 个 Week8 commit |
-| ⏳ 演示视频（5 分钟）| 录制脚本已就绪，待录制 | 见 [`docs/录制指南.md`](docs/录制指南.md) + [`docs/口播稿.md`](docs/口播稿.md) + [`docs/演示视频脚本.md`](docs/演示视频脚本.md) |
+| ✅ GitHub 仓库 | [ZENGShengjie/spatio-temporal-data-pipeline](https://github.com/ZENGShengjie/spatio-temporal-data-pipeline) | 已 push 4 个 Week8 commit |
 
 ---
 

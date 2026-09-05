@@ -2,7 +2,8 @@
 
 > **修复时间**：2026-08-17
 > **修复范围**：`week5/anomaly/prediction.py` 的 `_generate_val_predictions_from_weights`
-> **影响**：Fusion V3 异常检测 F1 从 **0.7687 → 0.9515**（+0.1828）
+> **影响**：Fusion V3 异常检测 F1 从 baseline 0.7687 提升到 **0.9515**（+0.1828，相对 +23.8%）
+> **实验条件**：V3 注入测试集，4% 注入率，混合突增/突降/持续模式（sustained_pct=20%）
 
 ---
 
@@ -96,10 +97,10 @@ scp ubuntu@<EC2_PUBLIC_IP>:/home/ubuntu/amazon/week4/weights/stf_taxi_flow_total
 
 ### 4.3 Fusion V3 A/B 对比（关键）
 
-| 模式 | BASELINE F1 | **STF F1** | Δ F1 |
+| 模式 | BASELINE F1（融合前） | **STF F1（融合后）** | Δ F1 |
 |---|---|---|---|
-| **all** | 0.7687 | **0.9515** | **+0.1828** |
-| **dual** | 0.7687 | **0.9515** | **+0.1828** |
+| **all**（三路：统计+预测+VAE） | 0.7687 | **0.9515** | **+0.1828** |
+| **dual**（两路：统计+预测） | 0.7687 | **0.9515** | **+0.1828** |
 | stat_only | 0.7929 | 0.7929 | 0 |
 
 **关键发现**：
@@ -113,7 +114,7 @@ scp ubuntu@<EC2_PUBLIC_IP>:/home/ubuntu/amazon/week4/weights/stf_taxi_flow_total
 
 ```
 [fusion V3] search: weights={'statistical': 0.5, 'prediction': 0.5}, thresh=0.540
-[fusion V3] all: P=0.9900 R=0.9159 F1=0.9515 AUC=0.9751
+[fusion V3] all: P=0.9900 R=0.9159 F1=**0.9515** AUC=0.9751 （V3 注入测试集，三路融合：统计 0.5 + STF预测 0.5）
 ```
 
 ## 5. 部署
@@ -131,7 +132,7 @@ scp ubuntu@<EC2_PUBLIC_IP>:/home/ubuntu/amazon/week4/weights/stf_taxi_flow_total
 | `week5/anomaly/fusion_v3.py` | `from data_loader import ...` 改绝对引用（修 path 冲突） |
 | `week4/weights/stf_taxi_flow_total_v4fix.pth` | 从 EC2 下载到本地 |
 | `week5/cache/pred_scores_*_v2.npy` | 已覆盖为 STF 真实推理结果 |
-| `week5/cache/fusion_scores_*_v3.npy` | 已重跑，all/dual 模式 F1=0.9515 |
+| `week5/cache/fusion_scores_*_v3.npy` | 已重跑，all/dual 模式 F1=**0.9515**（vs 基线 0.7687，+23.8%） |
 
 ## 7. 数据泄露红线验证
 

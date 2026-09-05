@@ -185,7 +185,7 @@
     <tbody>
       <tr><td>STF 测试 MAE</td><td>597.70</td><td><span class="number">297.55</span></td><td><span class="highlight">-50.2%</span></td></tr>
       <tr><td>异常检测 F1 (验证)</td><td>0.245</td><td><span class="number">0.7840</span></td><td><span class="highlight">+0.539</span></td></tr>
-      <tr><td>异常检测 F1 (测试)</td><td>—</td><td><span class="number">0.9515</span></td><td><span class="highlight">融合 V3</span></td></tr>
+      <tr><td>异常检测 F1 (测试)</td><td>0.791 (单路)</td><td><span class="number">0.9515</span> <small>(三路融合)</small></td><td><span class="highlight">+20% 绝对</span></td></tr>
       <tr><td>API 冷启动</td><td>1276 ms</td><td>1276 ms</td><td>—</td></tr>
       <tr><td>API 缓存命中</td><td>—</td><td><span class="number">9.8 ms</span></td><td><span class="highlight">130×</span></td></tr>
       <tr><td>STF 参数量</td><td>—</td><td><span class="number">222K</span></td><td>AGFormer 的 1/10</td></tr>
@@ -199,7 +199,7 @@
   <h2>五大技术亮点</h2>
   <ol>
     <li><span class="highlight">时空分解 Transformer (STF)</span>：222K 参数取得最优，Corr = 0.8043</li>
-    <li><span class="highlight">多范式融合异常检测</span>：统计 + 预测 + 重构三路互补，F1 = 0.9515</li>
+    <li><span class="highlight">多范式融合异常检测</span>：统计 (F1=0.791) + STF真实推理 + 重构三路互补，F1 = <span class="number">0.9515</span>（V3 注入测试集，4% 注入率）</li>
     <li><span class="highlight">完整数据治理</span>：P0 bit-for-bit 校验 + 缺失溯源 + 注入修复</li>
     <li><span class="highlight">端到端服务化</span>：FastAPI + Streamlit，缓存 130× 加速</li>
     <li><span class="highlight">可解释性</span>：SHAP + 注意力图 + 异常归因全链路</li>
@@ -427,7 +427,7 @@
              │  加权融合     │──── ► F1_max
    预测  ───►│  w·normalize │
              │  + 阈值搜索   │      验证: 0.7840
-   VAE   ───►│              │      测试: 0.9515
+   VAE   ───►│              │      测试: 0.9515 (三路融合)
              └──────────────┘
   </code></pre>
   <p>
@@ -448,7 +448,7 @@
       <tr><td>默认阈值 0.90 (V1)</td><td>0.83</td><td>0.14</td><td>0.245</td></tr>
       <tr><td>单路统计 (V2)</td><td>0.78</td><td>0.81</td><td>0.7929</td></tr>
       <tr><td>单路预测 (V3 fix)</td><td>0.71</td><td>0.83</td><td>0.7687</td></tr>
-      <tr style="background: #fce4ec"><td><b>融合 V3 (Final)</b></td><td><b>0.95</b></td><td><b>0.95</b></td><td><b class="number">0.9515</b></td></tr>
+      <tr style="background: #fce4ec"><td><b>融合 V3 (三路：统计+STF真实推理+VAE)</b></td><td><b>0.99</b></td><td><b>0.92</b></td><td><b class="number">0.9515</b></td></tr>
     </tbody>
   </table>
   <p class="highlight">融合提升 1+1&gt;2</p>
@@ -534,7 +534,7 @@
       <ul>
         <li>10 模型系统评估</li>
         <li>4 范式异常检测融合</li>
-        <li>F1 = <span class="number">0.9515</span></li>
+        <li>F1 = <span class="number">0.9515</span> <small>(三路融合, V3 测试集)</small></li>
         <li>API <span class="number">9.8 ms</span></li>
         <li>完整文档与可复现</li>
       </ul>

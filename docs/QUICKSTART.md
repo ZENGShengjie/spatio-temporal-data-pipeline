@@ -112,7 +112,8 @@ python3 run_v3_full_eval.py
 - `week5/report/v3_full_eval_<timestamp>.json`（所有方法 + 融合结果）
 - `week5/report/v3_final_report.md`（人类可读报告）
 
-**解读**：融合 V3 在测试集上 **F1 ≈ 0.9515**，单路统计法约 0.79。
+**解读**：融合 V3（统计 + STF真实推理 + VAE）在 V3 注入测试集上 **F1 = 0.9515**，单路统计法约 0.791。
+**实验条件**：V3 注入测试集，4% 注入率，混合突增/突降/持续模式（sustained_pct=20%）。
 
 ---
 

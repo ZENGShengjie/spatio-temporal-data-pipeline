@@ -405,7 +405,7 @@ curl http://localhost:8000/api/health
 # 4. 复现数字：
 # - GRU MAE ≈ 158.12（Week3）
 # - STF MAE ≈ 327.19（Week4）
-# - 融合 V3 F1 = 0.9515（Week5，统计+STF真实推理+VAE 三路融合，V3 注入测试集，4% 注入率）
+# - 融合 V3 F1 = 0.9165（Week5，统计+STF真实推理+VAE 三路融合，V3 注入测试集，4% 注入率）
 ```
 
 ---
